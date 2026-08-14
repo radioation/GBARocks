@@ -84,6 +84,6 @@ Simply typing `make` will create a rom file from your source.
 ## Useful links
 * Everyone says [tonc](https://gbadev.net/tonc/foreword.html)
 * [GBATek](http://problemkaputt.de/gbatek.htm)
-* Kyle Halladay's [GBA-By-Example](https://kylehalladay.com/blog/tutorial/gba/2017/03/28/GBA-By-Example-1.html)
+* Kyle Halladay's [GBA-By-Example](https://kylehalladay.com/gba.html)
 * Akkera102's [GBA Dev](https://akkera102.sakura.ne.jp/gbadev/)
 
