@@ -4,7 +4,7 @@ fill of VRAM with red seems like a decent first step. libGBA seems pretty undocu
  but the headers (at least so far) look usable.
 
 
-I've been looking over Kyle Halladay [GBA By Example](https://kylehalladay.com/blog/tutorial/gba/2017/03/28/GBA-By-Example-1.html)
+I've been looking over Kyle Halladay's [GBA By Example](https://kylehalladay.com/blog/tutorial/gba/2017/03/28/GBA-By-Example-1.html)
 
 ```c
 typedef unsigned short     uint16;
@@ -32,6 +32,9 @@ int main()
 }   
 ```
 
+I've also been looking through Akkera102's [GBA posts](https://akkera102.sakura.ne.jp/gbadev/index.php?tutorial.2)
+and they mention `SetMode( MODE_3 | BG2_ENABLE )`
+
 Poking around a bit in the headers yields:
 * `SetMode()` in `gba_video.h`. This is just an inline function to set `REG_DISPCNT`
 ```c
@@ -47,5 +50,25 @@ So `SetMode( MODE_3 | BG2_ON )` is equivalent to
 
 * `VRAM` is also in `gba_base.h` and is defined as `#define VRAM            0x06000000`
 
+
+* `RGB5()` in `gba_video.h` is a macro to set the color of a pixel. 
+  It's defined as `#define RGB5(r,g,b) ((r)|((g)<<5)|((b)<<10))`
+
+
+## VBLank
+
+Unlike Halladay's example, the libgba template has a set of calls for vblank interupts
+```c
+irqInit();
+irqEnable(IRQ_VBLANK);
+
+...
+
+while(1) {
+   VBLankIntrWait();
+}
+```
+I doubt I need to wait for the VBlank in this test program (nothing to cause screen tearing 
+in a solid red screen), but I'm leaving them in.
 
 

@@ -76,4 +76,6 @@ source /etc/profile.d/devkit-env.sh
 ```
 
 
+## SImple BUild
+I'll be using the template from [gba-examples](https://github.com/devkitPro/gba-examples/tree/master/template)
 
