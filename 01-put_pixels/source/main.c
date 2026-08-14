@@ -7,10 +7,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define DELAY
 
 //---------------------------------------------------------------------------------
 static inline void set_pixel( u32 x, u32 y, u16 color ) {
-	((u16 *)VRAM)[ x + y * 240 ] = color;
+	((volatile u16 *)VRAM)[ x + y * 240 ] = color;
 }
 
 //---------------------------------------------------------------------------------
@@ -31,12 +32,16 @@ int main(void) {
 
 	int x = 0;
 	int y = 0;
+	int old_x = 0; // deal with occasionally 'leftover' red pixels.
+	int old_y = 0;
 	while (1) {
 		VBlankIntrWait();
-		set_pixel( x, y, RGB5( 0, 0, 0 ));
 		x++; if( x >= 240 ) x = 0;
 		y++; if( y >= 160 ) y = 0;
+		set_pixel( old_x, old_y, RGB5( 0, 0, 0 ));
 		set_pixel( x, y, RGB5( 31, 0, 0 ));
+		old_x = x;
+		old_y = y;
 
 	}
 }
