@@ -76,6 +76,14 @@ source /etc/profile.d/devkit-env.sh
 ```
 
 
-## SImple BUild
-I'll be using the template from [gba-examples](https://github.com/devkitPro/gba-examples/tree/master/template)
+## Simple BUild
+I'll be using the template from [gba-examples](https://github.com/devkitPro/gba-examples/tree/master/template).
+Simply typing `make` will create a rom file from your source.
+
+
+## Useful links
+* Everyone says [tonc](https://gbadev.net/tonc/foreword.html)
+* [GBATek](http://problemkaputt.de/gbatek.htm)
+* Kyle Halladay's [GBA-By-Example](https://kylehalladay.com/blog/tutorial/gba/2017/03/28/GBA-By-Example-1.html)
+* Akkera102's [GBA Dev](https://akkera102.sakura.ne.jp/gbadev/)
 
