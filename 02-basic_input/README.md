@@ -1,4 +1,5 @@
-# Basic input
+# Basic input with libgba()
+
 A quick search of `libgba/include` shows a single file called `gba_input.h`. 
 Unsurprisingly, there's not much there:
 ```bash
@@ -41,5 +42,18 @@ typedef enum KEYPAD_BITS {
 
 ```
 
+# `REG_KEYINPUT` register
+we can also look at the register directly and not worry about libgba's reapeat
+```c
+#define REG_KEYINPUT        *(vu16*)(REG_BASE + 0x130)  // Key Input
+```
 
+```c
+                u32 key = ~(REG_KEYINPUT);
 
+                if(key & KEY_UP)    y--;
+                if(key & KEY_DOWN)  y++;
+                if(key & KEY_RIGHT) x++;
+                if(key & KEY_LEFT)  x--;
+
+```
