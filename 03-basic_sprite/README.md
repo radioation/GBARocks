@@ -1,3 +1,32 @@
+# TL;DR
+
+For sprites we need 
+1. Palette ( 256 or 16 ) at `(u16*)0x05000200`.  Use ATTR0 to choose 
+  `ATTR0_COLOR_256` or `ATTR_COLOR_15` modes
+2. Tiles : exact location depends on graphics mode
+    tiled: `(u16*)0x06010000`  bitmap: `(u16*)0x06014000.`
+3. sprite data (object struct) : `((OBJATTR *)0x07000000)`
+  *NOTE* I had to use volatile to make sprites show up in this example
+   So I setup `#define OAM_MEM ((volatile OBJATTR *)0x07000000)` instead 
+   of using OAM
+```c
+
+        // Configure our single active sprite
+        // #define ATTR0_COLOR_16                    (0<<13)
+        // #define ATTR0_SQUARE      OBJ_SHAPE(SQUARE)
+        // gba_sprites.h:#define OBJ_Y(m)                  ((m)&0x00ff)
+        OAM_MEM[0].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(40); // 4bpp, Square, Y=40
+
+
+        // gba_sprites.h:#define ATTR1_SIZE_16         (1<<14)
+        // gba_sprites.h:#define OBJ_X(m)                  ((m)&0x01ff)
+        OAM_MEM[0].attr1 = ATTR1_SIZE_16 | OBJ_X(50);                  // 16x16 size, X=50
+
+        OAM_MEM[0].attr2 = OBJ_CHAR(512) | OBJ_PRIORITY(0);           // Use Tile 512, highest priority
+  
+  
+```
+
 # Sprites
 
 Before getting to sprites, it's important to read Tonc's [video introduction](https://gbadev.net/tonc/video.html) 

@@ -32,6 +32,7 @@ int main(void) {
 	// BG2_ON          =       BIT(10),        /*!< enable background 2
 	// OBJ_ENABLE              =       OBJ_ON,         /*!< enable sprites     
  	// OBJ_1D_MAP      =       BIT(6),         /*!< sprite 1 dimensional mapping      
+	SetMode( MODE_3 | BG2_ON | OBJ_ENABLE | OBJ_1D_MAP );
 
 
         // get start of video ram
@@ -74,9 +75,7 @@ int main(void) {
 		sprite_vram[i] = sprite_tiles[i];
 	}
 
-
-		VBlankIntrWait();
-
+	// OAM didn't work, use volatial for OAM_MEM
 	// gba_sprites.h:#define   OAM                                     ((OBJATTR *)0x07000000)  
 	for(int i = 0; i < 128; i++) {
 		OAM_MEM[i].attr0 = ATTR0_DISABLED;
@@ -94,35 +93,31 @@ int main(void) {
 	OAM_MEM[0].attr1 = ATTR1_SIZE_16 | OBJ_X(50);                  // 16x16 size, X=50
 
 	OAM_MEM[0].attr2 = OBJ_CHAR(512) | OBJ_PRIORITY(0);           // Use Tile 512, highest priority
-	//OAM[0].attr2 &= 0xfc00;
-	///OAM[0].attr2 |= 512;
 
-/*
-volatile u16 *oam = (volatile u16 *)0x07000000;
-VBlankIntrWait();
-
-
-//oam[0] = 0x0028;   // attr0: normal, square, 4bpp, Y=40
-//oam[1] = 0x4032;   // attr1: 16x16, X=50
-//oam[2] = 0x0200;   // attr2: tile 512, priority 0, palette 0
-	// Configure our single active sprite
-	// #define ATTR0_COLOR_16                    (0<<13)
-	// #define ATTR0_SQUARE      OBJ_SHAPE(SQUARE)
-	// gba_sprites.h:#define OBJ_Y(m)                  ((m)&0x00ff)
-	oam[0] = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(40); // 4bpp, Square, Y=40
-
-
-	// gba_sprites.h:#define ATTR1_SIZE_16         (1<<14)
-	// gba_sprites.h:#define OBJ_X(m)                  ((m)&0x01ff)
-	oam[1] = ATTR1_SIZE_16 | OBJ_X(50);                  // 16x16 size, X=50
-
-	oam[2] = OBJ_CHAR(512) | OBJ_PRIORITY(0);           // Use Tile 512, highest priority
-	//OAM[0].attr2 &= 0xfc00;
-	///OAM[0].attr2 |= 512;
-	////*/
-	SetMode( MODE_3 | BG2_ON | OBJ_ENABLE | OBJ_1D_MAP );
+	int x =50;
+	int y =40;
 	while (1) {
 		VBlankIntrWait();
+/*
+		scanKeys(); 
+		u16 down = keysDownRepeat();
+		if( down & KEY_UP ) y--;
+		if( down & KEY_DOWN) y++;
+		if( down & KEY_LEFT ) x--;
+		if( down & KEY_RIGHT) x++;
+*/
+		u32 key = ~(REG_KEYINPUT);
+
+		if(key & KEY_UP)    y--;
+		if(key & KEY_DOWN)  y++;
+		if(key & KEY_RIGHT) x++;
+		if(key & KEY_LEFT)  x--;
+
+		OAM_MEM[0].attr0 &= 0xff00;
+		OAM_MEM[0].attr0 |= ( y & 0x00ff );
+
+		OAM_MEM[0].attr1 &= 0xfe00;
+		OAM_MEM[0].attr1 |= ( x & 0x00ff );
 	}
 }
 
