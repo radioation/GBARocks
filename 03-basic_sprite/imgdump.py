@@ -37,7 +37,7 @@ def main(args):
         print("----")
         for c in range(0, int(len(pal)/3)):
             val = (pal[c*3]<<16) + (pal[c*3+1]<< 8) + (pal[c*3+2] )
-            print(f'RGB8( {pal[c*3]}, {pal[c*3+1]}, {pal[c*3+2]} ),', end = "")
+            print(f'SPRITE_PALETTE[{c}] = RGB8( {pal[c*3]}, {pal[c*3+1]}, {pal[c*3+2]} );')
 
 
         print("\n----")
@@ -45,12 +45,14 @@ def main(args):
         for tile_y in range( 0, tileRows ):
             for tile_x in range( 0, tileCols ):
                 for y in range(0, 8): 
-                    for x in range(7,3,-1): 
-                        print( f'{px[ x + tile_x * 8, y + tile_y * 8]:x}', end = "" )
+                    print('0x', end = '' )
                     for x in range(3,-1,-1): 
                         print( f'{px[ x + tile_x * 8, y + tile_y * 8]:x}', end = "" )
+                    print(', 0x', end = '' )
+                    for x in range(7,3,-1): 
+                        print( f'{px[ x + tile_x * 8, y + tile_y * 8]:x}', end = "" )
                        
-                    print(",", end= "")
+                    print(", ", end= "")
                 print("")
 
 # the program.
