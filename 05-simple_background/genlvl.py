@@ -69,20 +69,50 @@ def gen_atari(world, basename):
         ofile.write("\n}\n")
         ofile.close();
 
+def gba_get_index( tile, sx, sy ):
+    #   water    :  0 1 2 3
+    #   sand     :  8 9 10 11
+    #   grass    :  16 71 18 19
+    #   hills    :  24 25 26 27
+    #   mountain :  28 29 30 31
+    off = 0
+    if sx == 1 and sy == 0:
+        off = 1
+    elif sx == 0 and sy == 1:
+        off = 2
+    elif sx == 1 and sy == 1:
+        off = 3
+    match tile: 
+        case '~': # Water
+            return 0 + off
+        case '.': # Sand
+            return 8 + off
+        case ',': # Grassland
+            return  16 + off
+        case '^': # Hills
+            return  24 + off
+        case 'M': # Mountain
+            return  29 + off
+
 def gen_gba(world, basename):
+    # assuming a single 32x32 block for now.
     map_cols = len(world[0])
     map_rows = len(world)
-    num_bytes = map_cols * map_rows * 4;
+    num_tiles = 32*32
     with open( basename + "gba.c", 'w') as ofile:
-        ofile.write(f"char map[{num_bytes}] ={{\n")
-        for row in world:
-            for col in row:
-                ofile.write( a8_world_row1( col ) )
+        ofile.write(f"const u16 map[{num_tiles}] __attribute__( (aligned(4)) )  ={{\n")
+        for y in range(0,32):
+            for x in range(0,32):
+                if y/2 < map_rows and x/2 < map_cols:
+                    tile = world[int(y/2)][int(x/2)];
+
+                    ind = gba_get_index(tile, x%2, y%2 )
+                    ofile.write( f'{ind},')
+                else : 
+                    ind = gba_get_index('~', x%2, y%2 )
+                    ofile.write( f'{ind},')
             ofile.write("\n")
-            for col in row:
-                ofile.write( a8_world_row2( col ) )
-            ofile.write("\n")
-        ofile.write("\n}\n")
+        ofile.write("\n};\n")
 
 
 def gen_megadrive( world, basename ):
