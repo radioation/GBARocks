@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "myfix.h"
 
 #include "space.h"
 extern const  u16 map[1024];
