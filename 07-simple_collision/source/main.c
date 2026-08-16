@@ -4,9 +4,15 @@
 #include <gba_interrupt.h>
 #include <gba_systemcalls.h>
 #include <gba_input.h>
+#include <gba_dma.h>
+#include <gba_sprites.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ufo.h"
+#include "ship.h"
+#include "boom.h"
+#include "shot.h"
 
 // constants
 #define MAX_SHOTS 15
@@ -56,11 +62,19 @@ int main(void) {
 	irqInit();
 	irqEnable(IRQ_VBLANK);
 
-	consoleDemoInit();
+	// setup palettes
+	dmaCopy( shotPal, SPRITE_PALETTE, shotPalLen );
+	dmaCopy( shipPal, SPRITE_PALETTE + 16, shipPalLen );
+	dmaCopy( ufoPal, SPRITE_PALETTE + 32, ufoPalLen );
+	dmaCopy( boomPal, SPRITE_PALETTE + 48, boomPalLen );
 
-	// ansi escape sequence to set print co-ordinates
-	// /x1b[line;columnH
-	iprintf("\x1b[10;10HHello World!\n");
+	// tiles
+	dmaCopy( shotTiles, OBJ_BASE_ADR, shotTilesLen );
+	dmaCopy( shipTiles, OBJ_BASE_ADR + 128, shipTilesLen );
+	dmaCopy( ufoTiles, OBJ_BASE_ADR + 128 + 2048, ufoTilesLen );
+	dmaCopy( boomTiles, OBJ_BASE_ADR + 128 + 2048  + 1024, boomTilesLen );
+	
+
 
 	while (1) {
 		VBlankIntrWait();
