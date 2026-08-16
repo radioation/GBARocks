@@ -105,7 +105,7 @@ int main(void) {
 	} 
 
 
-	BG_OFFSET[0].x = 0; BG_OFFSET[0].y = 0;
+
 
 	// use background 0 with tile base 0
 	//    #define TEXTBG_SIZE_256x256    BG_SIZE_0
