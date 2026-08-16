@@ -1,3 +1,18 @@
+# Scrolling
+Scrolling is trivially easy. Just set values for the BG of your choice
+
+```c
+REG_BG1HOFS = camera_x;
+REG_BG1VOFS = camera_y;
+```
+it even handles screen wrap, so no biggie. 
+
+To make this a little more useful, adding camera that stop at edges. 
+The main things that matters are keeping track of an overall camera position for 
+scrolling the map and a player (ship) position relative to the playfield size. 
+
+
+
 
 # grit
 The python scripts I used to break down images were just made to force myself to 

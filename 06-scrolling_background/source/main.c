@@ -17,6 +17,72 @@
 
 extern const  u16 map[1024];
 #define OAM_MEM ((volatile OBJATTR *)0x07000000)
+
+
+#define PLAYER_WIDTH 16
+#define PLAYER_HEIGHT 16
+#define PLAYFIELD_WIDTH 480
+#define PLAYFIELD_HEIGHT 480
+#define SCR_WIDTH 240
+#define SCR_HEIGHT 160
+#define CAMERA_PADDING 40
+
+int camPosX =0;
+int camPosY = 0;
+int shipPosX = 120;
+int shipPosY = 80;
+
+bool updatePlayerPosition = false;
+
+static void updateCameraPos() {
+	// figure out where the ship is.  
+	int shipScreenX = shipPosX - camPosX;
+	int shipScreenY = shipPosY - camPosY;
+
+	// Adjust new camera X position based on ship position
+	int newCamX;
+	// check if the ship X position is too close to the right edge of the screen
+	if( shipScreenX > SCR_WIDTH - CAMERA_PADDING - PLAYER_WIDTH ) {
+		newCamX = shipPosX - ( SCR_WIDTH - CAMERA_PADDING - PLAYER_WIDTH );
+	} else if( shipScreenX < CAMERA_PADDING ) { // check if the ship is too close to the left
+		newCamX = shipPosX - CAMERA_PADDING;	
+	} else {
+		newCamX = camPosX; // no change to camera position.
+	}
+
+	// Adjust camera Y position based on ship position
+	int newCamY;
+	// check if the ship Y position is too close to the bottom edge of the screen
+	if( shipScreenY > SCR_HEIGHT - CAMERA_PADDING - PLAYER_HEIGHT ) {
+		newCamY = shipPosY - ( SCR_HEIGHT - CAMERA_PADDING - PLAYER_HEIGHT ) ;
+	} else if( shipScreenY < CAMERA_PADDING ) {  // is ship too close to the top of the screen?
+		newCamY = shipPosY - CAMERA_PADDING;	
+	} else {
+		newCamY = camPosY; // no change to camera position.
+	}
+
+
+	// handle camera position at edges
+	if ( newCamX < 0  ) { // don't move past the left edge of the scroll image.
+		newCamX = 0;
+	} else if ( newCamX > (PLAYFIELD_WIDTH - SCR_WIDTH )) {  // don't move past the right edge
+		newCamX = PLAYFIELD_WIDTH - SCR_WIDTH ;
+	}
+	if ( newCamY < 0  ) { // don't move past the top of the scroll image
+		newCamY = 0;
+	} else if ( newCamY > (PLAYFIELD_HEIGHT - SCR_HEIGHT )) {  // don't move past the bottom 
+		newCamY = PLAYFIELD_HEIGHT - SCR_HEIGHT ;
+	}
+
+	// Store the values
+	camPosX = newCamX;
+	camPosY = newCamY;
+	// Update the MAP position
+	//MAP_scrollTo( map_a, camPosX, camPosY );
+	REG_BG1HOFS = camPosX;
+	REG_BG1VOFS = camPosY;
+}
+
 //---------------------------------------------------------------------------------
 // Program entry point
 //---------------------------------------------------------------------------------
@@ -80,8 +146,8 @@ int main(void) {
 	//    BG_16_COLOR             =       (0<<7),         /*!< background uses 16 color tiles             */
 	REG_BG1CNT = ( BG_SIZE_3 | BG_16_COLOR | TILE_BASE(0) | MAP_BASE(8) );
 
-	int camera_x = 0;
-	int camera_y = 0;
+	
+
 	int tick = 0;
 	int shipFrame = 0;
 	while (1) {
@@ -89,17 +155,34 @@ int main(void) {
 		scanKeys();
 		u16 keys = keysHeld();
 
-		if (keys & KEY_LEFT)
-			camera_x--;
+		if (keys & KEY_LEFT) {
+			shipPosX--;
+			if( shipPosX < -8 ) shipPosX = 0;
+		}
 
-		if (keys & KEY_RIGHT)
-			camera_x++;
+		if (keys & KEY_RIGHT) {
+			shipPosX++;
+			if( shipPosX >= PLAYFIELD_WIDTH - PLAYER_WIDTH + 8 ) shipPosX = PLAYFIELD_WIDTH-PLAYER_WIDTH + 8;
+		}
 
-		if (keys & KEY_UP)
-			camera_y--;
+		if (keys & KEY_UP) {
+			shipPosY--;
+			if( shipPosY < 0 ) shipPosY = 0;
+		}
 
-		if (keys & KEY_DOWN)
-			camera_y++;
+		if (keys & KEY_DOWN) {
+			shipPosY++;
+			if( shipPosY >= PLAYFIELD_HEIGHT - PLAYER_HEIGHT + 8 ) shipPosY = PLAYFIELD_HEIGHT - PLAYER_HEIGHT + 8;
+		}
+
+		// udpate pos
+		int x = shipPosX - camPosX;
+		int y = shipPosY - camPosY;
+		OAM_MEM[0].attr0 &= 0xff00;
+		OAM_MEM[0].attr0 |= ( y & 0x00ff );
+		OAM_MEM[0].attr1 &= 0xfe00;
+		OAM_MEM[0].attr1 |= ( x & 0x00ff );
+
 
 		tick++;
 		if( tick % 5 == 0 ) {	
@@ -109,9 +192,7 @@ int main(void) {
 			OAM_MEM[0].attr2 |= OBJ_CHAR(shipFrame);
 		}
 
-
-		REG_BG1HOFS = camera_x;
-		REG_BG1VOFS = camera_y;
+		updateCameraPos();
 	}
 }
 
