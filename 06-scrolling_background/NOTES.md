@@ -26,6 +26,7 @@ creates two C files `my_image.h` and `my_image.c`
 * -gB4   4-bits (16 color) tiles
 * -mR4   Look for duplicate/flipped tiles  palette handling 
 * -mLs   GBA screen-block format
+* -pn16  16 color palette
 * -ftc   create C arrays/header
 
 TO get this to work include the files created
