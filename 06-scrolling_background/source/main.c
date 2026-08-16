@@ -96,7 +96,7 @@ int main(void) {
 	//    #define TEXTBG_SIZE_256x256    BG_SIZE_0
 	//    BG_16_COLOR             =       (0<<7),         /*!< background uses 16 color tiles             */
 
-	REG_BG1CNT = ( BG_SIZE_0 | BG_16_COLOR | TILE_BASE(0) | MAP_BASE(8) );
+	REG_BG1CNT = ( BG_SIZE_3 | BG_16_COLOR | TILE_BASE(0) | MAP_BASE(8) );
 
 	int camera_x = 0;
 	int camera_y = 0;

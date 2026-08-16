@@ -38,4 +38,32 @@ I'm going with 480x480 which will still fit into a 512x512 tile map
 |    256x256     |    256x256     |
 +----------------+----------------+
 
+and uses sizes defined in `gba_video.h`
+
+`REG_BG1CNT = ( BG_SIZE_3 | BG_16_COLOR | TILE_BASE(0) | MAP_BASE(8) );`
+
+```bash
+$ grep BG_SIZE *
+gba_video.h:#define BG_SIZE(m)		((m<<14))
+gba_video.h:	BG_SIZE_0		=	BG_SIZE(0),	/*!< Map Size 256x256	*/
+gba_video.h:	BG_SIZE_1		=	BG_SIZE(1),	/*!< Map Size 512x256	*/
+gba_video.h:	BG_SIZE_2		=	BG_SIZE(2),	/*!< Map Size 256x512	*/
+gba_video.h:	BG_SIZE_3		=	BG_SIZE(3)	/*!< Map Size 512x512	*/
+gba_video.h:#define BG_WID_32 BG_SIZE_0
+gba_video.h:#define BG_WID_64 BG_SIZE_1
+gba_video.h:#define BG_HT_32  BG_SIZE_0
+gba_video.h:#define BG_HT_64  BG_SIZE_2
+gba_video.h:#define ROTBG_SIZE_16  BG_SIZE_0
+gba_video.h:#define ROTBG_SIZE_32  BG_SIZE_1
+gba_video.h:#define ROTBG_SIZE_64  BG_SIZE_2
+gba_video.h:#define ROTBG_SIZE_128 BG_SIZE_3
+gba_video.h:#define TEXTBG_SIZE_256x256    BG_SIZE_0
+gba_video.h:#define TEXTBG_SIZE_512x256    BG_SIZE_1
+gba_video.h:#define TEXTBG_SIZE_256x512    BG_SIZE_2
+gba_video.h:#define TEXTBG_SIZE_512x512    BG_SIZE_3
+gba_video.h:#define ROTBG_SIZE_128x128    BG_SIZE_0
+gba_video.h:#define ROTBG_SIZE_256x256    BG_SIZE_1
+gba_video.h:#define ROTBG_SIZE_512x512    BG_SIZE_2
+gba_video.h:#define ROTBG_SIZE_1024x1024  BG_SIZE_3
+```
 
