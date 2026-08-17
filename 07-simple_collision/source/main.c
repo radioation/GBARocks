@@ -153,6 +153,13 @@ void readKeys() {
 		shipSprite.vel_y = 0;
 	}
 
+	// respawn 
+    if (down & KEY_R) {
+      for( u16 i=0; i < MAX_UFOS; ++i ) {
+        ufos[i].active = true;
+      }
+    }
+
 }
 
 
@@ -248,8 +255,67 @@ void update() {
 	}
 
 
+	// update ufos
+  for( u16 i=0; i < MAX_UFOS; ++i ) {
+    if( ufos[i].active == true ) {
+      // actually not needed here, maybe later
+			OAM_MEM[ufos[i].obj_index].attr0 &= 0xff00;
+			OAM_MEM[ufos[i].obj_index].attr0 |= ( ufos[i].pos_y & 0x00ff );
+			OAM_MEM[ufos[i].obj_index].attr1 &= 0xfe00;
+			OAM_MEM[ufos[i].obj_index].attr1 |= ( ufos[i].pos_x & 0x00ff );
+    } else {
+      //SPR_setPosition( ufos[i].sprite, -32, 230 );
+			OAM_MEM[ufos[i].obj_index].attr0 &= 0xff00;
+			OAM_MEM[ufos[i].obj_index].attr0 |=  166 ;
+			OAM_MEM[ufos[i].obj_index].attr1 &= 0xfe00;
+			OAM_MEM[ufos[i].obj_index].attr1 |=  0 ;
+    }
+  }
+
 }
 
+
+
+void checkCollisions() {
+// likely expensive, I know.
+  for( u16 i=0; i < MAX_UFOS; ++i ) {
+    if( ufos[i].active == true ) {
+      // check if ship has hit
+      if( (ufos[i].pos_x + ufos[i].hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
+          (ufos[i].pos_x + ufos[i].hitbox_x2) > (shipSprite.pos_x + shipSprite.hitbox_x1) &&
+          (ufos[i].pos_y + ufos[i].hitbox_y1) < (shipSprite.pos_y + shipSprite.hitbox_y2) &&
+          (ufos[i].pos_y + ufos[i].hitbox_y2) > (shipSprite.pos_y + shipSprite.hitbox_y1)  ) 
+      {
+        ufos[i].active = false;
+      }
+
+      for( u16 j=0; j < MAX_SHOTS; ++j ) {
+        if(
+            shipShots[j].active == true &&
+            (ufos[i].pos_x + ufos[i].hitbox_x1) < (shipShots[j].pos_x + shipShots[j].hitbox_x2) &&
+            (ufos[i].pos_x + ufos[i].hitbox_x2) > (shipShots[j].pos_x + shipShots[j].hitbox_x1) &&
+            (ufos[i].pos_y + ufos[i].hitbox_y1) < (shipShots[j].pos_y + shipShots[j].hitbox_y2) &&
+            (ufos[i].pos_y + ufos[i].hitbox_y2) > (shipShots[j].pos_y + shipShots[j].hitbox_y1)  ) 
+        {
+          ufos[i].active = false;
+          shipShots[j].active = false;
+        }
+      }
+    }
+  }
+  for( u16 i=0; i < MAX_UFO_SHOTS; ++i ) {
+    if( ufoShots[i].active == true ) {
+      if( (ufoShots[i].pos_x + ufoShots[i].hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
+          (ufoShots[i].pos_x + ufoShots[i].hitbox_x2) > (shipSprite.pos_x + shipSprite.hitbox_x1) &&
+          (ufoShots[i].pos_y + ufoShots[i].hitbox_y1) < (shipSprite.pos_y + shipSprite.hitbox_y2) &&
+          (ufoShots[i].pos_y + ufoShots[i].hitbox_y2) > (shipSprite.pos_y + shipSprite.hitbox_y1)  ) 
+      {
+        ufoShots[i].active = false;
+      }
+    }
+  }
+
+}
 
 //---------------------------------------------------------------------------------
 // Program entry point
@@ -308,7 +374,7 @@ int main(void) {
 		VBlankIntrWait();
 		readKeys();
 		update();
-		//checkCollisions();
+		checkCollisions();
 	}
 }
 
