@@ -13,6 +13,8 @@
 #include "ship.h"
 #include "boom.h"
 #include "shot.h"
+#include "space.h"
+#include "gb_rock.h"
 
 // constants
 #define MAX_SHOTS 15
@@ -333,16 +335,24 @@ int main(void) {
 	REG_DISPCNT = ( MODE_0|BG1_ON | OBJ_ENABLE | OBJ_1D_MAP );	
 
 	// setup palettes
+	dmaCopy( spacePal, BG_PALETTE, spacePalLen );
 	dmaCopy( shotPal, SPRITE_PALETTE, shotPalLen );
 	dmaCopy( shipPal, SPRITE_PALETTE + 16, shipPalLen );
 	dmaCopy( ufoPal, SPRITE_PALETTE + 32, ufoPalLen );
 	dmaCopy( boomPal, SPRITE_PALETTE + 48, boomPalLen );
+	//dmaCopy( gb_rockPal, SPRITE_PALETTE + 64, gb_rockPalLen ); same as UFO.
 
 	// tiles
+	dmaCopy( spaceTiles, TILE_BASE_ADR(0), spaceTilesLen );
+	dmaCopy( spaceMap, MAP_BASE_ADR(8), spaceMapLen );
+
 	dmaCopy( shotTiles, OBJ_BASE_ADR, shotTilesLen );
 	dmaCopy( shipTiles, OBJ_BASE_ADR + 128, shipTilesLen );
 	dmaCopy( ufoTiles, OBJ_BASE_ADR + 128 + 2048, ufoTilesLen );
 	dmaCopy( boomTiles, OBJ_BASE_ADR + 128 + 2048  + 1024, boomTilesLen );
+
+
+	REG_BG1CNT = ( BG_SIZE_3 | BG_16_COLOR | TILE_BASE(0) | MAP_BASE(8) );
 
 
 	// clear things out

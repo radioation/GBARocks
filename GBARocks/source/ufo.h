@@ -3,12 +3,12 @@
 
 //======================================================================
 //
-//	ufo, 16x128@4, 
+//	ufo, 128x16@4, 
 //	+ palette 16 entries, not compressed
 //	+ 32 tiles Metatiled by 2x2 not compressed
 //	Total size: 32 + 1024 = 1056
 //
-//	Time-stamp: 2026-08-16, 16:53:49
+//	Time-stamp: 2026-08-17, 11:10:05
 //	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
 //	( http://www.coranac.com/projects/#grit )
 //
