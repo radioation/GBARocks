@@ -29,18 +29,18 @@
 
 // the play 
 struct CP_SPRITE {
-  int obj_index;
-  int pos_x;
-  int pos_y;
-  int vel_x;
-  int vel_y;
+	int obj_index;
+	int pos_x;
+	int pos_y;
+	int vel_x;
+	int vel_y;
 
-  int hitbox_x1;
-  int hitbox_y1;
-  int hitbox_x2;
-  int hitbox_y2;
+	int hitbox_x1;
+	int hitbox_y1;
+	int hitbox_x2;
+	int hitbox_y2;
 
-  bool active;
+	bool active;
 
 };
 
@@ -52,34 +52,85 @@ struct CP_SPRITE ufos[MAX_UFOS];
 struct CP_SPRITE ufoShots[MAX_UFO_SHOTS];
 
 
-/*
-void createShipShots(int start_ind;) {
-  int xpos = -16;
-  int ypos = 230;
+int createShipShots(int start_ind) {
+	int xpos = -16;
+	int ypos = 166;
 
-  for( u16 i=0; i < MAX_SHOTS; ++i ) {
-    shipShots[i].pos_x = xpos;
-    shipShots[i].pos_y = ypos;
-    shipShots[i].vel_x = 0;
-    shipShots[i].vel_y = 0;
-    shipShots[i].active = FALSE;
-    shipShots[i].hitbox_x1 = 0;
-    shipShots[i].hitbox_y1 = 0;
-    shipShots[i].hitbox_x2 = 8;
-    shipShots[i].hitbox_y2 = 8;
+	int curr_ind = start_ind;
+	for( int i=0; i < MAX_SHOTS; ++i ) {
+		shipShots[i].pos_x = xpos;
+		shipShots[i].pos_y = ypos;
+		shipShots[i].vel_x = 0;
+		shipShots[i].vel_y = 0;
+		shipShots[i].active = false;
+		shipShots[i].hitbox_x1 = 2;
+		shipShots[i].hitbox_y1 = 2;
+		shipShots[i].hitbox_x2 = 6;
+		shipShots[i].hitbox_y2 = 6;
 
-    shipShots[i].obj_index;
-    SPR_setAnim( shipShots[i].sprite, 2 );
-  }
+		shipShots[i].obj_index = curr_ind;
+		OAM_MEM[shipShots[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(shipShots[i].pos_y);	
+		OAM_MEM[shipShots[i].obj_index].attr1 = ATTR1_SIZE_8  | OBJ_X(shipShots[i].pos_x);
+		OAM_MEM[shipShots[i].obj_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(1) | OBJ_PRIORITY(0);
+
+		curr_ind++;
+	}
+	return curr_ind;
 
 }
-*/
 
 void readKeys() {
 	scanKeys();
 
 	u16 down = keysDown();
 	u16 up = keysUp();
+
+	if ( down & KEY_A ) {
+		int addedShot = 0;
+		for( int i=0; i < MAX_SHOTS; ++i ) {
+			if( shipShots[i].active == false ) {
+				shipShots[i].active = true;
+				// set its starting position
+				shipShots[i].pos_x = shipSprite.pos_x+4;
+				shipShots[i].pos_y = shipSprite.pos_y;
+				switch( addedShot ) {            
+					case 0:
+						shipShots[i].vel_x =  0;
+						shipShots[i].vel_y = -6;
+						break;
+
+					case 1:
+						shipShots[i].vel_x = -2;
+						shipShots[i].vel_y = -5;
+						break;
+
+					case 2:
+						shipShots[i].vel_x =  2;
+						shipShots[i].vel_y = -5;
+						break;
+
+					case 3:
+						shipShots[i].vel_x = -3;
+						shipShots[i].vel_y = -3;
+						break;
+
+					case 4:
+						shipShots[i].vel_x =  3;
+						shipShots[i].vel_y = -3;
+						break;
+
+
+				}
+				++addedShot;
+				if( addedShot >= 5 ) {
+					break;
+				}
+			}
+		}
+
+	}
+
+
 	if( down & KEY_LEFT ) {
 		shipSprite.vel_x = -1;
 	} else if ( up & KEY_LEFT ) {
@@ -90,39 +141,77 @@ void readKeys() {
 	} else if ( up & KEY_RIGHT ) {
 		shipSprite.vel_x = 0;
 	}
-	
+
+	if( down & KEY_UP ) {
+		shipSprite.vel_y = -1;
+	} else if ( up & KEY_UP ) {
+		shipSprite.vel_y = 0;
+	}
+	if( down & KEY_DOWN ) {
+		shipSprite.vel_y = 1;
+	} else if ( up & KEY_DOWN ) {
+		shipSprite.vel_y = 0;
+	}
+
 }
 
 void update() {
-	  //Check horizontal bounds
-  if(shipSprite.pos_x < LEFT_EDGE){
-    shipSprite.pos_x = LEFT_EDGE;
-    shipSprite.vel_x = -shipSprite.vel_x;
-  } else if(shipSprite.pos_x + (shipSprite.hitbox_x2 - shipSprite.hitbox_x1 ) > RIGHT_EDGE){
-    shipSprite.pos_x = RIGHT_EDGE - (shipSprite.hitbox_x2 - shipSprite.hitbox_x1) ;
-    shipSprite.vel_x = -shipSprite.vel_x;
-  }
+	//Check horizontal bounds
+	if(shipSprite.pos_x < LEFT_EDGE){
+		shipSprite.pos_x = LEFT_EDGE;
+		shipSprite.vel_x = -shipSprite.vel_x;
+	} else if(shipSprite.pos_x + (shipSprite.hitbox_x2 - shipSprite.hitbox_x1 ) > RIGHT_EDGE){
+		shipSprite.pos_x = RIGHT_EDGE - (shipSprite.hitbox_x2 - shipSprite.hitbox_x1) ;
+		shipSprite.vel_x = -shipSprite.vel_x;
+	}
 
 
-  //Check vertical bounds
-  if(shipSprite.pos_y < TOP_EDGE){
-    shipSprite.pos_y = TOP_EDGE;
-    shipSprite.vel_y = -shipSprite.vel_y;
-  } else if(shipSprite.pos_y + (shipSprite.hitbox_y2 - shipSprite.hitbox_y1 ) > BOTTOM_EDGE){
-    shipSprite.pos_y = BOTTOM_EDGE - ( shipSprite.hitbox_y2 - shipSprite.hitbox_y1 );
-    shipSprite.vel_y = -shipSprite.vel_y;
-  }
+	//Check vertical bounds
+	if(shipSprite.pos_y < TOP_EDGE){
+		shipSprite.pos_y = TOP_EDGE;
+		shipSprite.vel_y = -shipSprite.vel_y;
+	} else if(shipSprite.pos_y + (shipSprite.hitbox_y2 - shipSprite.hitbox_y1 ) > BOTTOM_EDGE){
+		shipSprite.pos_y = BOTTOM_EDGE - ( shipSprite.hitbox_y2 - shipSprite.hitbox_y1 );
+		shipSprite.vel_y = -shipSprite.vel_y;
+	}
 
-  //Position the ship
-  shipSprite.pos_x += shipSprite.vel_x;
-  shipSprite.pos_y += shipSprite.vel_y;
+	//Position the ship
+	shipSprite.pos_x += shipSprite.vel_x;
+	shipSprite.pos_y += shipSprite.vel_y;
 
 
-  // update player position
-     OAM_MEM[0].attr0 &= 0xff00;
-      OAM_MEM[0].attr0 |= ( shipSprite.pos_y & 0x00ff );
-     OAM_MEM[0].attr1 &= 0xfe00;
-     OAM_MEM[0].attr1 |= ( shipSprite.pos_x & 0x00ff );
+	// update player position
+	OAM_MEM[0].attr0 &= 0xff00;
+	OAM_MEM[0].attr0 |= ( shipSprite.pos_y & 0x00ff );
+	OAM_MEM[0].attr1 &= 0xfe00;
+	OAM_MEM[0].attr1 |= ( shipSprite.pos_x & 0x00ff );
+
+
+	// shots
+	for( u16 i=0; i < MAX_SHOTS; ++i ) {
+		if( shipShots[i].active == true ) {
+			shipShots[i].pos_x +=  shipShots[i].vel_x;
+			shipShots[i].pos_y +=  shipShots[i].vel_y;
+			if(shipShots[i].pos_y  < 0 ) {
+				shipShots[i].pos_x = -16;
+				shipShots[i].pos_y = 166;
+				shipShots[i].vel_x = 0;
+				shipShots[i].vel_y = 0;
+				shipShots[i].active = false;
+			}
+			//SPR_setPosition(shipShots[i].sprite,shipShots[i].pos_x,shipShots[i].pos_y);
+			OAM_MEM[shipShots[i].obj_index].attr0 &= 0xff00;
+			OAM_MEM[shipShots[i].obj_index].attr0 |= ( shipShots[i].pos_y & 0x00ff );
+			OAM_MEM[shipShots[i].obj_index].attr1 &= 0xfe00;
+			OAM_MEM[shipShots[i].obj_index].attr1 |= ( shipShots[i].pos_x & 0x00ff );
+		} else {
+			OAM_MEM[shipShots[i].obj_index].attr0 &= 0xff00;
+			OAM_MEM[shipShots[i].obj_index].attr0 |=  166 ;
+			OAM_MEM[shipShots[i].obj_index].attr1 &= 0xfe00;
+			OAM_MEM[shipShots[i].obj_index].attr1 |=  0 ;
+		}
+	}
+
 
 }
 
@@ -131,7 +220,7 @@ void update() {
 // Program entry point
 //---------------------------------------------------------------------------------
 int main(void) {
-//---------------------------------------------------------------------------------
+	//---------------------------------------------------------------------------------
 
 
 	// the vblank interrupt must be enabled for VBlankIntrWait() to work
@@ -156,9 +245,9 @@ int main(void) {
 
 
 	// clear things out
-        for(int i = 0; i < 128; i++) {
-                OAM_MEM[i].attr0 = ATTR0_DISABLED;
-        }
+	for(int i = 0; i < 128; i++) {
+		OAM_MEM[i].attr0 = ATTR0_DISABLED;
+	}
 
 	// initial ship
 	shipSprite.pos_x = 112;
@@ -175,7 +264,7 @@ int main(void) {
 	OAM_MEM[0].attr1 = ATTR1_SIZE_16 | OBJ_X(shipSprite.pos_x);
 	OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(4) | OBJ_PRIORITY(0);
 
-	//createShipShots();
+	int lastIndex = createShipShots(1);
 	//createUFOs();	
 	//createUFOShots();	
 
