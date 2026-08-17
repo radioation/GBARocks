@@ -155,6 +155,41 @@ void readKeys() {
 
 }
 
+
+
+int createUFOs(int start_ind) {
+  int curr_ind = start_ind;
+  s16 ufo_pos_x = 50;
+  s16 ufo_pos_y = 14;
+
+  s16 xpos = 50;
+  s16 ypos = 14;
+  for( u16 i=0; i < MAX_UFOS; ++i ) {
+    if( i == 5 ) {
+      ypos = ufo_pos_y + 40;
+      xpos = ufo_pos_x + 15;
+    } 
+    ufos[i].pos_x = xpos;
+    ufos[i].pos_y = ypos;
+    ufos[i].vel_x = 0;
+    ufos[i].vel_y = 0;
+    ufos[i].active = true;
+    ufos[i].hitbox_x1 = 0;
+    ufos[i].hitbox_y1 = 0;
+    ufos[i].hitbox_x2 = 16;
+    ufos[i].hitbox_y2 = 16;
+
+		ufos[i].obj_index = curr_ind;
+		OAM_MEM[ufos[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(ufos[i].pos_y);	
+		OAM_MEM[ufos[i].obj_index].attr1 = ATTR1_SIZE_16  | OBJ_X(ufos[i].pos_x);
+		OAM_MEM[ufos[i].obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR(68) | OBJ_PRIORITY(0);
+    xpos += 30;
+	curr_ind++;
+
+  }
+
+}
+
 void update() {
 	//Check horizontal bounds
 	if(shipSprite.pos_x < LEFT_EDGE){
@@ -265,7 +300,7 @@ int main(void) {
 	OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(4) | OBJ_PRIORITY(0);
 
 	int lastIndex = createShipShots(1);
-	//createUFOs();	
+	createUFOs(lastIndex);	
 	//createUFOShots();	
 
 
