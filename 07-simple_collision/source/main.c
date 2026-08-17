@@ -154,46 +154,46 @@ void readKeys() {
 	}
 
 	// respawn 
-    if (down & KEY_R) {
-      for( u16 i=0; i < MAX_UFOS; ++i ) {
-        ufos[i].active = true;
-      }
-    }
+	if (down & KEY_R) {
+		for( u16 i=0; i < MAX_UFOS; ++i ) {
+			ufos[i].active = true;
+		}
+	}
 
 }
 
 
 
 int createUFOs(int start_ind) {
-  int curr_ind = start_ind;
-  s16 ufo_pos_x = 50;
-  s16 ufo_pos_y = 14;
+	int curr_ind = start_ind;
+	s16 ufo_pos_x = 50;
+	s16 ufo_pos_y = 14;
 
-  s16 xpos = 50;
-  s16 ypos = 14;
-  for( u16 i=0; i < MAX_UFOS; ++i ) {
-    if( i == 5 ) {
-      ypos = ufo_pos_y + 40;
-      xpos = ufo_pos_x + 15;
-    } 
-    ufos[i].pos_x = xpos;
-    ufos[i].pos_y = ypos;
-    ufos[i].vel_x = 0;
-    ufos[i].vel_y = 0;
-    ufos[i].active = true;
-    ufos[i].hitbox_x1 = 0;
-    ufos[i].hitbox_y1 = 0;
-    ufos[i].hitbox_x2 = 16;
-    ufos[i].hitbox_y2 = 16;
+	s16 xpos = 50;
+	s16 ypos = 14;
+	for( u16 i=0; i < MAX_UFOS; ++i ) {
+		if( i == 5 ) {
+			ypos = ufo_pos_y + 40;
+			xpos = ufo_pos_x + 15;
+		} 
+		ufos[i].pos_x = xpos;
+		ufos[i].pos_y = ypos;
+		ufos[i].vel_x = 0;
+		ufos[i].vel_y = 0;
+		ufos[i].active = true;
+		ufos[i].hitbox_x1 = 0;
+		ufos[i].hitbox_y1 = 0;
+		ufos[i].hitbox_x2 = 16;
+		ufos[i].hitbox_y2 = 16;
 
 		ufos[i].obj_index = curr_ind;
 		OAM_MEM[ufos[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(ufos[i].pos_y);	
 		OAM_MEM[ufos[i].obj_index].attr1 = ATTR1_SIZE_16  | OBJ_X(ufos[i].pos_x);
 		OAM_MEM[ufos[i].obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR(68) | OBJ_PRIORITY(0);
-    xpos += 30;
-	curr_ind++;
+		xpos += 30;
+		curr_ind++;
 
-  }
+	}
 
 }
 
@@ -256,64 +256,64 @@ void update() {
 
 
 	// update ufos
-  for( u16 i=0; i < MAX_UFOS; ++i ) {
-    if( ufos[i].active == true ) {
-      // actually not needed here, maybe later
+	for( u16 i=0; i < MAX_UFOS; ++i ) {
+		if( ufos[i].active == true ) {
+			// actually not needed here, maybe later
 			OAM_MEM[ufos[i].obj_index].attr0 &= 0xff00;
 			OAM_MEM[ufos[i].obj_index].attr0 |= ( ufos[i].pos_y & 0x00ff );
 			OAM_MEM[ufos[i].obj_index].attr1 &= 0xfe00;
 			OAM_MEM[ufos[i].obj_index].attr1 |= ( ufos[i].pos_x & 0x00ff );
-    } else {
-      //SPR_setPosition( ufos[i].sprite, -32, 230 );
+		} else {
+			//SPR_setPosition( ufos[i].sprite, -32, 230 );
 			OAM_MEM[ufos[i].obj_index].attr0 &= 0xff00;
 			OAM_MEM[ufos[i].obj_index].attr0 |=  166 ;
 			OAM_MEM[ufos[i].obj_index].attr1 &= 0xfe00;
 			OAM_MEM[ufos[i].obj_index].attr1 |=  0 ;
-    }
-  }
+		}
+	}
 
 }
 
 
 
 void checkCollisions() {
-// likely expensive, I know.
-  for( u16 i=0; i < MAX_UFOS; ++i ) {
-    if( ufos[i].active == true ) {
-      // check if ship has hit
-      if( (ufos[i].pos_x + ufos[i].hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
-          (ufos[i].pos_x + ufos[i].hitbox_x2) > (shipSprite.pos_x + shipSprite.hitbox_x1) &&
-          (ufos[i].pos_y + ufos[i].hitbox_y1) < (shipSprite.pos_y + shipSprite.hitbox_y2) &&
-          (ufos[i].pos_y + ufos[i].hitbox_y2) > (shipSprite.pos_y + shipSprite.hitbox_y1)  ) 
-      {
-        ufos[i].active = false;
-      }
+	// likely expensive, I know.
+	for( u16 i=0; i < MAX_UFOS; ++i ) {
+		if( ufos[i].active == true ) {
+			// check if ship has hit
+			if( (ufos[i].pos_x + ufos[i].hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
+					(ufos[i].pos_x + ufos[i].hitbox_x2) > (shipSprite.pos_x + shipSprite.hitbox_x1) &&
+					(ufos[i].pos_y + ufos[i].hitbox_y1) < (shipSprite.pos_y + shipSprite.hitbox_y2) &&
+					(ufos[i].pos_y + ufos[i].hitbox_y2) > (shipSprite.pos_y + shipSprite.hitbox_y1)  ) 
+			{
+				ufos[i].active = false;
+			}
 
-      for( u16 j=0; j < MAX_SHOTS; ++j ) {
-        if(
-            shipShots[j].active == true &&
-            (ufos[i].pos_x + ufos[i].hitbox_x1) < (shipShots[j].pos_x + shipShots[j].hitbox_x2) &&
-            (ufos[i].pos_x + ufos[i].hitbox_x2) > (shipShots[j].pos_x + shipShots[j].hitbox_x1) &&
-            (ufos[i].pos_y + ufos[i].hitbox_y1) < (shipShots[j].pos_y + shipShots[j].hitbox_y2) &&
-            (ufos[i].pos_y + ufos[i].hitbox_y2) > (shipShots[j].pos_y + shipShots[j].hitbox_y1)  ) 
-        {
-          ufos[i].active = false;
-          shipShots[j].active = false;
-        }
-      }
-    }
-  }
-  for( u16 i=0; i < MAX_UFO_SHOTS; ++i ) {
-    if( ufoShots[i].active == true ) {
-      if( (ufoShots[i].pos_x + ufoShots[i].hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
-          (ufoShots[i].pos_x + ufoShots[i].hitbox_x2) > (shipSprite.pos_x + shipSprite.hitbox_x1) &&
-          (ufoShots[i].pos_y + ufoShots[i].hitbox_y1) < (shipSprite.pos_y + shipSprite.hitbox_y2) &&
-          (ufoShots[i].pos_y + ufoShots[i].hitbox_y2) > (shipSprite.pos_y + shipSprite.hitbox_y1)  ) 
-      {
-        ufoShots[i].active = false;
-      }
-    }
-  }
+			for( u16 j=0; j < MAX_SHOTS; ++j ) {
+				if(
+						shipShots[j].active == true &&
+						(ufos[i].pos_x + ufos[i].hitbox_x1) < (shipShots[j].pos_x + shipShots[j].hitbox_x2) &&
+						(ufos[i].pos_x + ufos[i].hitbox_x2) > (shipShots[j].pos_x + shipShots[j].hitbox_x1) &&
+						(ufos[i].pos_y + ufos[i].hitbox_y1) < (shipShots[j].pos_y + shipShots[j].hitbox_y2) &&
+						(ufos[i].pos_y + ufos[i].hitbox_y2) > (shipShots[j].pos_y + shipShots[j].hitbox_y1)  ) 
+				{
+					ufos[i].active = false;
+					shipShots[j].active = false;
+				}
+			}
+		}
+	}
+	for( u16 i=0; i < MAX_UFO_SHOTS; ++i ) {
+		if( ufoShots[i].active == true ) {
+			if( (ufoShots[i].pos_x + ufoShots[i].hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
+					(ufoShots[i].pos_x + ufoShots[i].hitbox_x2) > (shipSprite.pos_x + shipSprite.hitbox_x1) &&
+					(ufoShots[i].pos_y + ufoShots[i].hitbox_y1) < (shipSprite.pos_y + shipSprite.hitbox_y2) &&
+					(ufoShots[i].pos_y + ufoShots[i].hitbox_y2) > (shipSprite.pos_y + shipSprite.hitbox_y1)  ) 
+			{
+				ufoShots[i].active = false;
+			}
+		}
+	}
 
 }
 
