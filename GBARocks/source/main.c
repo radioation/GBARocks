@@ -16,6 +16,8 @@
 #include "shot.h"
 #include "space.h"
 #include "gb_rock.h"
+#include "gb_mid_rock.h"
+#include "gb_small_rock.h"
 
 #define OAM_MEM ((volatile OBJATTR *)0x07000000)
 
@@ -36,7 +38,11 @@ struct CP_SPRITE {
     int hitbox_y2;
 
     bool active;
-
+    int tile_index;
+    int tile_step;
+    int frame_count;
+    int frame;
+    int frame_delay;
 };
 
 enum SHIP_STATE {
@@ -55,6 +61,14 @@ static s16 lives = 3;
 static s16 ship_ticks = 0;
 u8 shipDir = 0;
 const u8 angleStep = 2;
+
+const int32_t shotOffset = 0;
+const int32_t shipOffset = 128;
+const int32_t ufoOffset = 128 + 2048;
+const int32_t boomOffset = 128 + 2048 + 1024;
+const int32_t rockOffset = 128 + 2048 + 1024 + 4608;
+const int32_t midRockOffset = 128 + 2048 + 1024 + 4608 + 4096;
+const int32_t smallRockOffset = 128 + 2048 + 1024 + 4608 + 4096 + 1024;
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -170,7 +184,6 @@ void readKeys() {
     if( true ) {
         if( keys & KEY_LEFT ) {
             shipDir -= angleStep ;
-            shipDir + 8;
             // total of 16 frames but 256 dirs. 1 frame has to cover 16 directions
             u8 tmpDir =  shipDir >> 4;
             OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(4 + (tmpDir << 2)) | OBJ_PRIORITY(0);
@@ -178,7 +191,6 @@ void readKeys() {
         }
         if( keys & KEY_RIGHT ) {
             shipDir += angleStep;
-            shipDir + 8;
             // need to update frame 
             u8 tmpDir = shipDir >> 4;
             OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(4 + (tmpDir << 2)) | OBJ_PRIORITY(0);
@@ -275,7 +287,7 @@ int createUFO(int start_ind) {
 
     OAM_MEM[ufo.obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(ufo.pos_y);	
     OAM_MEM[ufo.obj_index].attr1 = ATTR1_SIZE_16  | OBJ_X(ufo.pos_x);
-    OAM_MEM[ufo.obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR(68) | OBJ_PRIORITY(0);
+    OAM_MEM[ufo.obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR(ufoOffset/32) | OBJ_PRIORITY(0);
 
     curr_ind++;
     return curr_ind;
@@ -475,85 +487,179 @@ static void updateCameraPos() {
 }
 
 
+
+
+void createRock(u8 i, u16 rockType, myfix x, myfix y ) {
+}
+int createRocks(int start_ind) {
+	int curr_ind = start_ind;
+	myfix ypos = MYFIX(0);
+	myfix xpos = MYFIX(0);
+	for( int i=0; i < MAX_ROCKS; ++i ) {
+		rocks[i].pos_x = MYFIX(random()%(PLAYFIELD_WIDTH-32) + i );  // random starting position for rock sprites
+		rocks[i].pos_y = MYFIX(random()%(PLAYFIELD_HEIGHT-32)+ i);
+
+		// use ranodm direction for rock motion
+		u16 rot = random() % 256; 
+		myfix vel = MYFIX(0.8);
+		rocks[i].vel_x = fix_mul( vel, thrustX[rot]  );
+		rocks[i].vel_y = fix_mul( vel, thrustY[rot]  );
+		rocks[i].active = true;
+		rocks[i].hitbox_x1 = MYFIX(2);
+		rocks[i].hitbox_y1 = MYFIX(2);
+		rocks[i].hitbox_x2 = MYFIX(30);
+		rocks[i].hitbox_y2 = MYFIX(30);
+
+		//rocks[i].sprite = SPR_addSprite( &rock, -32, -32, TILE_ATTR( PAL3, 0, FALSE, FALSE ));
+		rocks[i].obj_index = curr_ind;
+		OAM_MEM[rocks[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(rocks[i].pos_y);	
+		OAM_MEM[rocks[i].obj_index].attr1 = ATTR1_SIZE_32  | OBJ_X(rocks[i].pos_x);
+		OAM_MEM[rocks[i].obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR(16 + rockOffset/32) | OBJ_PRIORITY(0);
+		//	SPR_setAnim( rocks[i].sprite, 0 );
+	curr_ind++;
+	}
+	return curr_ind;
+
+	/*
+	   obj_pos_x[i] = x;
+	   obj_pos_y[i] = y;
+	   u8 rot = random();
+	   obj_live[i] = true;
+	   myfix vel = rockVelocity;
+	   if( rockType == ROCK ) {
+	   obj_hit_w[i] = MYFIX(30);
+	   obj_sprites[i] = SPR_addSprite(&rock, -32, -32, TILE_ATTR(PAL3, 0, FALSE, FALSE));
+	   } else if ( rockType == MID_ROCK ) {
+	   vel = rockVelocity + MYFIX(2);
+	   obj_sprites[i] = SPR_addSprite(&mid_rock, -32, -32, TILE_ATTR(PAL3, 0, FALSE, FALSE));
+	   obj_hit_w[i] = MYFIX(22);
+	   } else if ( rockType == SMALL_ROCK ) {
+	   vel = rockVelocity + MYFIX(4);
+	   obj_sprites[i] = SPR_addSprite(&small_rock, -32, -32, TILE_ATTR(PAL3, 0, FALSE, FALSE));
+	   obj_hit_w[i] = MYFIX(14);
+	   }
+	   obj_speed_x[i] = F16_mul( vel, thrustX[rot] );
+	   obj_speed_y[i] = F16_mul( vel, thrustY[rot] );
+	   SPR_setAnim(obj_sprites[i], i % 4);
+	   obj_type[i] = rockType;
+	   */
+}
+
+/*
+   void createRocks(u8 numRocks )
+   {
+   for (u8 i = 0; i < MAX_ROCKS; ++i)
+   {
+   if( i < numRocks ) {
+   myfix x = MYFIX(PLAYFIELD_WIDTH/2);
+   myfix y = MYFIX(PLAYFIELD_HEIGHT/2);
+   if( random() %2 == 0 ) {
+// x edges
+y = MYFIX(random() % (PLAYFIELD_HEIGHT));
+} else {
+x = MYFIX(random() % (PLAYFIELD_WITDH));
+}
+createRock( i, ROCK, x, y );
+} else {
+// clear out the rest  of the rocks
+obj_pos_x[i] = MYFIX(-32);
+obj_pos_y[i] = MYFIX(-32);
+
+obj_speed_x[i] = MYFIX(0);
+obj_speed_y[i] = MYFIX(0);
+obj_live[i] = FALSE;
+obj_hit_w[i] = MYFIX(0);
+obj_sprites[i] = NULL;
+obj_type[i] = NO_TYPE;
+}
+}
+}
+*/
+
+
 //---------------------------------------------------------------------------------
 // Program entry point
 //---------------------------------------------------------------------------------
 int main(void) {
-    //---------------------------------------------------------------------------------
+	//---------------------------------------------------------------------------------
 
-    // the vblank interrupt must be enabled for VBlankIntrWait() to work
-    // since the default dispatcher handles the bios flags no vblank handler
-    // is required
-    irqInit();
-    irqEnable(IRQ_VBLANK);
+	// the vblank interrupt must be enabled for VBlankIntrWait() to work
+	// since the default dispatcher handles the bios flags no vblank handler
+	// is required
+	irqInit();
+	irqEnable(IRQ_VBLANK);
 
-    //consoleDebugInit(DebugDevice_NOCASH);
-    int x = 123;
-    int y = 45;
+	//consoleDebugInit(DebugDevice_NOCASH);
+	int x = 123;
+	int y = 45;
 
-    REG_DISPCNT = ( MODE_0|BG1_ON | OBJ_ENABLE | OBJ_1D_MAP );	
+	REG_DISPCNT = ( MODE_0|BG1_ON | OBJ_ENABLE | OBJ_1D_MAP );	
 
-    // setup palettes
-    dmaCopy( spacePal, BG_PALETTE, spacePalLen );
-    dmaCopy( shotPal, SPRITE_PALETTE, shotPalLen );
-    dmaCopy( shipPal, SPRITE_PALETTE + 16, shipPalLen );
-    dmaCopy( ufoPal, SPRITE_PALETTE + 32, ufoPalLen );
-    dmaCopy( boomPal, SPRITE_PALETTE + 48, boomPalLen );
-    //dmaCopy( gb_rockPal, SPRITE_PALETTE + 64, gb_rockPalLen ); same as UFO.
+	// setup palettes
+	dmaCopy( spacePal, BG_PALETTE, spacePalLen );
+	dmaCopy( shotPal, SPRITE_PALETTE, shotPalLen );
+	dmaCopy( shipPal, SPRITE_PALETTE + 16, shipPalLen );
+	dmaCopy( ufoPal, SPRITE_PALETTE + 32, ufoPalLen );
+	dmaCopy( boomPal, SPRITE_PALETTE + 48, boomPalLen );
+	//dmaCopy( gb_rockPal, SPRITE_PALETTE + 64, gb_rockPalLen ); same as UFO.
 
-    // tiles
-    dmaCopy( spaceTiles, TILE_BASE_ADR(0), spaceTilesLen );
-    dmaCopy( spaceMap, MAP_BASE_ADR(8), spaceMapLen );
+	// tiles
+	dmaCopy( spaceTiles, TILE_BASE_ADR(0), spaceTilesLen );
+	dmaCopy( spaceMap, MAP_BASE_ADR(8), spaceMapLen );
 
-    dmaCopy( shotTiles, OBJ_BASE_ADR, shotTilesLen );
-    dmaCopy( shipTiles, OBJ_BASE_ADR + 128, shipTilesLen );
-    dmaCopy( ufoTiles, OBJ_BASE_ADR + 128 + 2048, ufoTilesLen );
-    dmaCopy( boomTiles, OBJ_BASE_ADR + 128 + 2048  + 1024, boomTilesLen );
+	dmaCopy( shotTiles, OBJ_BASE_ADR, shotTilesLen );
+	dmaCopy( shipTiles, OBJ_BASE_ADR + shipOffset, shipTilesLen );
+	dmaCopy( ufoTiles, OBJ_BASE_ADR + ufoOffset, ufoTilesLen );
+	dmaCopy( boomTiles, OBJ_BASE_ADR + boomOffset, boomTilesLen );
+	dmaCopy( gb_rockTiles, OBJ_BASE_ADR + rockOffset, gb_rockTilesLen );
+	dmaCopy( gb_mid_rockTiles, OBJ_BASE_ADR + midRockOffset, gb_mid_rockTilesLen );
+	dmaCopy( gb_small_rockTiles, OBJ_BASE_ADR + smallRockOffset, gb_small_rockTilesLen );
 
 
-    REG_BG1CNT = ( BG_SIZE_3 | BG_16_COLOR | TILE_BASE(0) | MAP_BASE(8) );
+	REG_BG1CNT = ( BG_SIZE_3 | BG_16_COLOR | TILE_BASE(0) | MAP_BASE(8) );
 
 
-    // clear things out
-    for(int i = 0; i < 128; i++) {
-        OAM_MEM[i].attr0 = ATTR0_DISABLED;
-    }
+	// clear things out
+	for(int i = 0; i < 128; i++) {
+		OAM_MEM[i].attr0 = ATTR0_DISABLED;
+	}
 
-    // initial ship
-    shipSprite.pos_x = MYFIX(112);
-    shipSprite.pos_y = MYFIX(100);
-    shipSprite.vel_x = MYFIX(0);
-    shipSprite.vel_y = MYFIX(0);
-    shipSprite.active = true;
-    shipSprite.hitbox_x1 = 0;
-    shipSprite.hitbox_y1 = 0;
-    shipSprite.hitbox_x2 = 16;
-    shipSprite.hitbox_y2 = 16;
-    shipSprite.obj_index = 0;
-    OAM_MEM[0].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(MYFIX(shipSprite.pos_y));	
-    OAM_MEM[0].attr1 = ATTR1_SIZE_16 | OBJ_X(MYFIX(shipSprite.pos_x));
-    OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(4) | OBJ_PRIORITY(0);
+	// initial ship
+	shipSprite.pos_x = MYFIX(112);
+	shipSprite.pos_y = MYFIX(100);
+	shipSprite.vel_x = MYFIX(0);
+	shipSprite.vel_y = MYFIX(0);
+	shipSprite.active = true;
+	shipSprite.hitbox_x1 = 0;
+	shipSprite.hitbox_y1 = 0;
+	shipSprite.hitbox_x2 = 16;
+	shipSprite.hitbox_y2 = 16;
+	shipSprite.obj_index = 0;
+	OAM_MEM[0].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(MYFIX(shipSprite.pos_y));	
+	OAM_MEM[0].attr1 = ATTR1_SIZE_16 | OBJ_X(MYFIX(shipSprite.pos_x));
+	OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(shipOffset/32) | OBJ_PRIORITY(0);
 
-    int lastIndex = createShipShots(1);
-    lastIndex = createUFO(lastIndex);	
-    //lastIndex = createUFOShot(lastIndex);	
+	int lastIndex = createShipShots(1);
+	lastIndex = createUFO(lastIndex);	
+	lastIndex = createRocks(lastIndex);	
+	//lastIndex = createUFOShot(lastIndex);	
 
-    //iprintf("\x1b[1;1H");
-    //iprintf("tX: %d iTX: %d   \n", thrustX[0], fixToInt(thrustX[0]) );
-    //iprintf("tY: %d iTY: %d   \n", thrustY[0], fixToInt(thrustY[0]) );
+	//iprintf("\x1b[1;1H");
+	//iprintf("tX: %d iTX: %d   \n", thrustX[0], fixToInt(thrustX[0]) );
+	//iprintf("tY: %d iTY: %d   \n", thrustY[0], fixToInt(thrustY[0]) );
 
-    //myfix testval = MYFIX( 10.5 );
-    //iprintf("tV: %d iTV: %d   \n", testval, fixToInt(testval));     
+	//myfix testval = MYFIX( 10.5 );
+	//iprintf("tV: %d iTV: %d   \n", testval, fixToInt(testval));     
 
-    while (1) {
-        VBlankIntrWait();
-        //        iprintf("\x1b[1;1H");
-        //        iprintf("d: %d a: %d v: %d  \n", shipDir, fixToInt(shipAccelX), fixToInt( shipSprite.vel_x )); 
-        readKeys();
-        update();
-        checkCollisions();
-        updateCameraPos();
-    }
+	while (1) {
+		VBlankIntrWait();
+		//        iprintf("\x1b[1;1H");
+		//        iprintf("d: %d a: %d v: %d  \n", shipDir, fixToInt(shipAccelX), fixToInt( shipSprite.vel_x )); 
+		readKeys();
+		update();
+		checkCollisions();
+		updateCameraPos();
+	}
 }
 
 
