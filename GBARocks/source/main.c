@@ -43,8 +43,10 @@ enum SHIP_STATE {
     ship_warping_in = 2,
     ship_warp_pressed = 4,
 };
-myfix ship_warp_pos_x = MYFIX(0.0);
-myfix ship_warp_pos_y = MYFIX(0.0);
+myfix shipAccelX = MYFIX(0.0);
+myfix shipAccelY = MYFIX(0.0);
+//myfix ship_warp_pos_x = MYFIX(0.0);
+//myfix ship_warp_pos_y = MYFIX(0.0);
 u8 ship_state = ship_dead;
 static u16 score = 0;
 static s16 lives = 3;
@@ -178,6 +180,27 @@ void readKeys() {
             
         }
 
+        if( keys & KEY_UP ) {
+            shipAccelX += thrustX[shipDir];
+            shipSprite.vel_x += shipAccelX;
+                if( shipSprite.vel_x > MYFIX(0.0) && shipAccelX > MYFIX(0.0) && shipSprite.vel_x >  maxSpeedX[shipDir] ) {
+                    shipSprite.vel_x = maxSpeedX[shipDir];
+                    shipAccelX = MYFIX(0.0);
+                } else if ( shipSprite.vel_x < MYFIX(0) && shipAccelX < MYFIX(0.0) && shipSprite.vel_x <  maxSpeedX[shipDir] ) {
+                    shipSprite.vel_x = maxSpeedX[shipDir];
+                    shipAccelX = MYFIX(0.0);
+                }
+            shipAccelY += thrustY[shipDir];
+            shipSprite.vel_y += shipAccelY;
+                if( shipSprite.vel_y > MYFIX(0.0) && shipAccelY > MYFIX(0.0) && shipSprite.vel_y >  maxSpeedY[shipDir] ) {
+                    shipSprite.vel_y = maxSpeedY[shipDir];
+                    shipAccelY = MYFIX(0.0);
+                } else if ( shipSprite.vel_y < MYFIX(0.0) && shipAccelY < MYFIX(0.0) && shipSprite.vel_y < maxSpeedY[shipDir] ) {
+                    shipSprite.vel_y = maxSpeedY[shipDir];
+                    shipAccelY = MYFIX(0.0);
+                }
+
+        }
     } else {
       //  if( down == KEY_START ) {
       //      //clear_enemy_objs();
@@ -288,8 +311,10 @@ int createUFO(int start_ind) {
 }
 
 void update() {
-    if( game_mode == play_mode ) {
-        if( ship_state & ship_live ) {
+    //if( game_mode == play_mode ) {
+    if( true ) {
+        //if( ship_state & ship_live ) {
+        if( true ) {
             if( ship_state & ship_warping_in ) {
                 ship_ticks++;
                 if( ship_ticks < 150 ) {
@@ -310,16 +335,16 @@ void update() {
             if(shipSprite.pos_x < MYFIX(0)){
                 shipSprite.pos_x = MYFIX(0);
                 shipSprite.vel_x = -shipSprite.vel_x;
-            } else if(shipSprite.pos_x  > MAP_WIDTH){
-                shipSprite.pos_x = MAP_WIDTH  - PLAYER_WIDTH ;
+            } else if(shipSprite.pos_x  > MYFIX(MAP_WIDTH)){
+                shipSprite.pos_x = MYFIX(MAP_WIDTH  - PLAYER_WIDTH) ;
                 shipSprite.vel_x = -shipSprite.vel_x;
             }
             //Check vert bounds
             if(shipSprite.pos_y < MYFIX(0)){
                 shipSprite.pos_y = MYFIX(0);
                 shipSprite.vel_y = -shipSprite.vel_y;
-            } else if(shipSprite.pos_y  > MAP_HEIGHT){
-                shipSprite.pos_y = MAP_HEIGHT  - PLAYER_WIDTH ;
+            } else if(shipSprite.pos_y  > MYFIX(MAP_HEIGHT)){
+                shipSprite.pos_y = MYFIX(MAP_HEIGHT  - PLAYER_WIDTH) ;
                 shipSprite.vel_y = -shipSprite.vel_y;
             }
 
