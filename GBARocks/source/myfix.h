@@ -7,7 +7,7 @@ typedef int32_t myfix;
 extern const  myfix mySinTab[256];
 
 #define MYFIX_INT_BITS 16
-#define MYFIX_FRAC_BITS (16 - MYFIX_INT_BITS)
+#define MYFIX_FRAC_BITS (32 - MYFIX_INT_BITS)
 
 #define MYFIX_ONE ( 1 << MYFIX_FRAC_BITS)
 #define MYFIX(value) ((myfix)((value) * MYFIX_ONE))
