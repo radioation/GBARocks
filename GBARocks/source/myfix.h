@@ -8,8 +8,8 @@ extern const  myfix mySinTab[256];
 #define MYFIX_INT_BITS 16
 #define MYFIX_FRAC_BITS (16 - MYFIX_INT_BITS)
 
-#define FIX_ONE ( 1 << MYFIX_FRAC_BITS)
-#define FIX(value) ((myfix)((value) * FIX_ONE))
+#define MYFIX_ONE ( 1 << MYFIX_FRAC_BITS)
+#define MYFIX(value) ((myfix)((value) * MYFIX_ONE))
 
 static inline myfix intToFix( int32_t x ) {
 	return (x << MYFIX_FRAC_BITS);
