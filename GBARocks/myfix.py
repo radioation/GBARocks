@@ -15,8 +15,8 @@ print("};")
 
 
 
-THRUST_DIV = 5.0
-MAX_SPEED = 4.0
+THRUST_DIV = 7.0
+MAX_SPEED = 3.0
 
 print("const myfix thrustX[256] = {")
 for step in range( 0, 256 ):

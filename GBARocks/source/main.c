@@ -1,5 +1,4 @@
 
-#include <gba_console.h>
 #include <gba_video.h>
 #include <gba_interrupt.h>
 #include <gba_systemcalls.h>
@@ -20,20 +19,23 @@
 
 #define OAM_MEM ((volatile OBJATTR *)0x07000000)
 
+
+
+
 // the play 
 struct CP_SPRITE {
-	myfix  obj_index;
-	myfix  pos_x;
-	myfix  pos_y;
-	myfix  vel_x;
-	myfix  vel_y;
+    myfix  obj_index;
+    myfix  pos_x;
+    myfix  pos_y;
+    myfix  vel_x;
+    myfix  vel_y;
 
-	int hitbox_x1;
-	int hitbox_y1;
-	int hitbox_x2;
-	int hitbox_y2;
+    int hitbox_x1;
+    int hitbox_y1;
+    int hitbox_x2;
+    int hitbox_y2;
 
-	bool active;
+    bool active;
 
 };
 
@@ -129,37 +131,37 @@ void spawnShip() {
 
 
 int createShipShots(int start_ind) {
-	myfix xpos = MYFIX(-16);
-	myfix ypos = MYFIX(166);
+    myfix xpos = MYFIX(-16);
+    myfix ypos = MYFIX(166);
 
-	int curr_ind = start_ind;
-	for( int i=0; i < MAX_PLAYER_SHOTS; ++i ) {
-		shipShots[i].pos_x = xpos;
-		shipShots[i].pos_y = ypos;
-		shipShots[i].vel_x = MYFIX(0);
-		shipShots[i].vel_y = MYFIX(0);
-		shipShots[i].active = false;
-		shipShots[i].hitbox_x1 = 2;
-		shipShots[i].hitbox_y1 = 2;
-		shipShots[i].hitbox_x2 = 6;
-		shipShots[i].hitbox_y2 = 6;
+    int curr_ind = start_ind;
+    for( int i=0; i < MAX_PLAYER_SHOTS; ++i ) {
+        shipShots[i].pos_x = xpos;
+        shipShots[i].pos_y = ypos;
+        shipShots[i].vel_x = MYFIX(0);
+        shipShots[i].vel_y = MYFIX(0);
+        shipShots[i].active = false;
+        shipShots[i].hitbox_x1 = 2;
+        shipShots[i].hitbox_y1 = 2;
+        shipShots[i].hitbox_x2 = 6;
+        shipShots[i].hitbox_y2 = 6;
 
-		shipShots[i].obj_index = curr_ind;
-		OAM_MEM[shipShots[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(shipShots[i].pos_y);	
-		OAM_MEM[shipShots[i].obj_index].attr1 = ATTR1_SIZE_8  | OBJ_X(shipShots[i].pos_x);
-		OAM_MEM[shipShots[i].obj_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(1) | OBJ_PRIORITY(0);
+        shipShots[i].obj_index = curr_ind;
+        OAM_MEM[shipShots[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(shipShots[i].pos_y);	
+        OAM_MEM[shipShots[i].obj_index].attr1 = ATTR1_SIZE_8  | OBJ_X(shipShots[i].pos_x);
+        OAM_MEM[shipShots[i].obj_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(1) | OBJ_PRIORITY(0);
 
-		curr_ind++;
-	}
-	return curr_ind;
+        curr_ind++;
+    }
+    return curr_ind;
 
 }
 
 void readKeys() {
-	scanKeys();
+    scanKeys();
 
-	u16 down = keysDown();
-	//u16 up = keysUp();
+    u16 down = keysDown();
+    //u16 up = keysUp();
     u32 keys = ~(REG_KEYINPUT);
     //if( game_mode == play_mode ) {
     if( true ) {
@@ -177,112 +179,147 @@ void readKeys() {
             // need to update frame 
             u8 tmpDir = shipDir >> 4;
             OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(4 + (tmpDir << 2)) | OBJ_PRIORITY(0);
-            
+
         }
 
         if( keys & KEY_UP ) {
-            shipAccelX += thrustX[shipDir];
+            shipAccelX = thrustX[shipDir];
             shipSprite.vel_x += shipAccelX;
-                if( shipSprite.vel_x > MYFIX(0.0) && shipAccelX > MYFIX(0.0) && shipSprite.vel_x >  maxSpeedX[shipDir] ) {
-                    shipSprite.vel_x = maxSpeedX[shipDir];
-                    shipAccelX = MYFIX(0.0);
-                } else if ( shipSprite.vel_x < MYFIX(0) && shipAccelX < MYFIX(0.0) && shipSprite.vel_x <  maxSpeedX[shipDir] ) {
-                    shipSprite.vel_x = maxSpeedX[shipDir];
-                    shipAccelX = MYFIX(0.0);
-                }
+            if( shipSprite.vel_x > MYFIX(0.0) && shipAccelX > MYFIX(0.0) && shipSprite.vel_x >  maxSpeedX[shipDir] ) {
+                shipSprite.vel_x = maxSpeedX[shipDir];
+                shipAccelX = MYFIX(0.0);
+            } else if ( shipSprite.vel_x < MYFIX(0) && shipAccelX < MYFIX(0.0) && shipSprite.vel_x <  maxSpeedX[shipDir] ) {
+                shipSprite.vel_x = maxSpeedX[shipDir];
+                shipAccelX = MYFIX(0.0);
+            }
             shipAccelY += thrustY[shipDir];
             shipSprite.vel_y += shipAccelY;
-                if( shipSprite.vel_y > MYFIX(0.0) && shipAccelY > MYFIX(0.0) && shipSprite.vel_y >  maxSpeedY[shipDir] ) {
-                    shipSprite.vel_y = maxSpeedY[shipDir];
-                    shipAccelY = MYFIX(0.0);
-                } else if ( shipSprite.vel_y < MYFIX(0.0) && shipAccelY < MYFIX(0.0) && shipSprite.vel_y < maxSpeedY[shipDir] ) {
-                    shipSprite.vel_y = maxSpeedY[shipDir];
-                    shipAccelY = MYFIX(0.0);
-                }
+            if( shipSprite.vel_y > MYFIX(0.0) && shipAccelY > MYFIX(0.0) && shipSprite.vel_y >  maxSpeedY[shipDir] ) {
+                shipSprite.vel_y = maxSpeedY[shipDir];
+                shipAccelY = MYFIX(0.0);
+            } else if ( shipSprite.vel_y < MYFIX(0.0) && shipAccelY < MYFIX(0.0) && shipSprite.vel_y < maxSpeedY[shipDir] ) {
+                shipSprite.vel_y = maxSpeedY[shipDir];
+                shipAccelY = MYFIX(0.0);
+            }
 
+        } else {
+            // Decelerate without atan()/atan2()
+            // not thrusting, check x and y movemtn components
+            //  and turn orn acceleration to counter. 
+            //  admittedly not great, but OK~ish for this project.
+            if( shipSprite.vel_x > MYFIX(0.0) ) {
+                shipAccelX = MYFIX(-0.03);
+                shipSprite.vel_x += shipAccelX;
+                if( shipSprite.vel_x <= MYFIX(0.0) ) {
+                    shipSprite.vel_x = MYFIX(0.0);
+                    shipAccelX = MYFIX(0.0);
+                }
+            } else if( shipSprite.vel_x < MYFIX(0.0) ) {
+                shipAccelX = MYFIX(0.03);
+                shipSprite.vel_x += shipAccelX;
+                if( shipSprite.vel_x >= MYFIX(0.0) ) {
+                    shipSprite.vel_x = MYFIX(0.0);
+                    shipAccelX = MYFIX(0.0);
+                }
+            } 
+            if( shipSprite.vel_y > MYFIX(0.0) ) {
+                shipAccelY = MYFIX(-0.03);
+                shipSprite.vel_y += shipAccelY;
+                if( shipSprite.vel_y <= MYFIX(0.0) ) {
+                    shipSprite.vel_y = MYFIX(0.0);
+                    shipAccelX = MYFIX(0.0);
+                }
+            } else if( shipSprite.vel_y < MYFIX(0.0) ) {
+                shipAccelY = MYFIX(0.03);
+                shipSprite.vel_y += shipAccelY;
+                if( shipSprite.vel_y >= MYFIX(0.0) ) {
+                    shipSprite.vel_y = MYFIX(0.0);
+                    shipAccelX = MYFIX(0.0);
+                }
+            } 
         }
     } else {
-      //  if( down == KEY_START ) {
-      //      //clear_enemy_objs();
-      //      level = 1;
-      //      lives = 1;
-      //      game_mode = play_mode;
-      //      spawnShip();
-      //      delayTicks = 128;
-      //  }
+        //  if( down == KEY_START ) {
+        //      //clear_enemy_objs();
+        //      level = 1;
+        //      lives = 1;
+        //      game_mode = play_mode;
+        //      spawnShip();
+        //      delayTicks = 128;
+        //  }
     }
 
 
-/*
-	if ( down & KEY_A ) {
-		int addedShot = 0;
-		for( int i=0; i < MAX_PLAYER_SHOTS; ++i ) {
-			if( shipShots[i].active == false ) {
-				shipShots[i].active = true;
-				// set its starting position
-				shipShots[i].pos_x = shipSprite.pos_x+4;
-				shipShots[i].pos_y = shipSprite.pos_y;
-				switch( addedShot ) {            
-					case 0:
-						shipShots[i].vel_x =  0;
-						shipShots[i].vel_y = -6;
-						break;
+    /*
+       if ( down & KEY_A ) {
+       int addedShot = 0;
+       for( int i=0; i < MAX_PLAYER_SHOTS; ++i ) {
+       if( shipShots[i].active == false ) {
+       shipShots[i].active = true;
+    // set its starting position
+    shipShots[i].pos_x = shipSprite.pos_x+4;
+    shipShots[i].pos_y = shipSprite.pos_y;
+    switch( addedShot ) {            
+    case 0:
+    shipShots[i].vel_x =  0;
+    shipShots[i].vel_y = -6;
+    break;
 
-					case 1:
-						shipShots[i].vel_x = -2;
-						shipShots[i].vel_y = -5;
-						break;
+    case 1:
+    shipShots[i].vel_x = -2;
+    shipShots[i].vel_y = -5;
+    break;
 
-					case 2:
-						shipShots[i].vel_x =  2;
-						shipShots[i].vel_y = -5;
-						break;
+    case 2:
+    shipShots[i].vel_x =  2;
+    shipShots[i].vel_y = -5;
+    break;
 
-					case 3:
-						shipShots[i].vel_x = -3;
-						shipShots[i].vel_y = -3;
-						break;
+    case 3:
+    shipShots[i].vel_x = -3;
+    shipShots[i].vel_y = -3;
+    break;
 
-					case 4:
-						shipShots[i].vel_x =  3;
-						shipShots[i].vel_y = -3;
-						break;
-
-
-				}
-				++addedShot;
-				if( addedShot >= 5 ) {
-					break;
-				}
-			}
-		}
-
-	}
+    case 4:
+    shipShots[i].vel_x =  3;
+    shipShots[i].vel_y = -3;
+    break;
 
 
-	if( down & KEY_LEFT ) {
-		shipSprite.vel_x = -1;
-	} else if ( up & KEY_LEFT ) {
-		shipSprite.vel_x = 0;
-	}
-	if( down & KEY_RIGHT ) {
-		shipSprite.vel_x = 1;
-	} else if ( up & KEY_RIGHT ) {
-		shipSprite.vel_x = 0;
-	}
+    }
+    ++addedShot;
+    if( addedShot >= 5 ) {
+    break;
+    }
+    }
+    }
 
-	if( down & KEY_UP ) {
-		shipSprite.vel_y = -1;
-	} else if ( up & KEY_UP ) {
-		shipSprite.vel_y = 0;
-	}
-	if( down & KEY_DOWN ) {
-		shipSprite.vel_y = 1;
-	} else if ( up & KEY_DOWN ) {
-		shipSprite.vel_y = 0;
-	}
+    }
 
-*/
+
+    if( down & KEY_LEFT ) {
+    shipSprite.vel_x = -1;
+    } else if ( up & KEY_LEFT ) {
+    shipSprite.vel_x = 0;
+    }
+    if( down & KEY_RIGHT ) {
+    shipSprite.vel_x = 1;
+    } else if ( up & KEY_RIGHT ) {
+    shipSprite.vel_x = 0;
+    }
+
+    if( down & KEY_UP ) {
+    shipSprite.vel_y = -1;
+    } else if ( up & KEY_UP ) {
+    shipSprite.vel_y = 0;
+    }
+    if( down & KEY_DOWN ) {
+    shipSprite.vel_y = 1;
+    } else if ( up & KEY_DOWN ) {
+    shipSprite.vel_y = 0;
+    }
+
+     */
 
 
 }
@@ -402,120 +439,131 @@ void update() {
     //        OAM_MEM[ufo.obj_index].attr1 |=  0 ;
     //    }
 
-}
-
-
-
-void checkCollisions() {
-    /*
-       for( u16 i=0; i < MAX_UFOS; ++i ) {
-       if( ufo.active == true ) {
-    // check if ship has hit
-    if( (ufo.pos_x + ufo.hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
-    (ufo.pos_x + ufo.hitbox_x2) > (shipSprite.pos_x + shipSprite.hitbox_x1) &&
-    (ufo.pos_y + ufo.hitbox_y1) < (shipSprite.pos_y + shipSprite.hitbox_y2) &&
-    (ufo.pos_y + ufo.hitbox_y2) > (shipSprite.pos_y + shipSprite.hitbox_y1)  ) 
-    {
-    ufo.active = false;
     }
 
-    for( u16 j=0; j < MAX_PLAYER_SHOTS; ++j ) {
-    if(
-    shipShots[j].active == true &&
-    (ufo.pos_x + ufo.hitbox_x1) < (shipShots[j].pos_x + shipShots[j].hitbox_x2) &&
-    (ufo.pos_x + ufo.hitbox_x2) > (shipShots[j].pos_x + shipShots[j].hitbox_x1) &&
-    (ufo.pos_y + ufo.hitbox_y1) < (shipShots[j].pos_y + shipShots[j].hitbox_y2) &&
-    (ufo.pos_y + ufo.hitbox_y2) > (shipShots[j].pos_y + shipShots[j].hitbox_y1)  ) 
-    {
-    ufo.active = false;
-    shipShots[j].active = false;
-    }
-    }
-    }
-    }
-    for( u16 i=0; i < MAX_UFO_SHOTS; ++i ) {
-    if( ufoShots[i].active == true ) {
-    if( (ufoShots[i].pos_x + ufoShots[i].hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
-    (ufoShots[i].pos_x + ufoShots[i].hitbox_x2) > (shipSprite.pos_x + shipSprite.hitbox_x1) &&
-    (ufoShots[i].pos_y + ufoShots[i].hitbox_y1) < (shipSprite.pos_y + shipSprite.hitbox_y2) &&
-    (ufoShots[i].pos_y + ufoShots[i].hitbox_y2) > (shipSprite.pos_y + shipSprite.hitbox_y1)  ) 
-    {
-    ufoShots[i].active = false;
-    }
-    }
-    }
-     */
 
 
-}
+    void checkCollisions() {
+        /*
+           for( u16 i=0; i < MAX_UFOS; ++i ) {
+           if( ufo.active == true ) {
+        // check if ship has hit
+        if( (ufo.pos_x + ufo.hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
+        (ufo.pos_x + ufo.hitbox_x2) > (shipSprite.pos_x + shipSprite.hitbox_x1) &&
+        (ufo.pos_y + ufo.hitbox_y1) < (shipSprite.pos_y + shipSprite.hitbox_y2) &&
+        (ufo.pos_y + ufo.hitbox_y2) > (shipSprite.pos_y + shipSprite.hitbox_y1)  ) 
+        {
+        ufo.active = false;
+        }
 
-//---------------------------------------------------------------------------------
-// Program entry point
-//---------------------------------------------------------------------------------
-int main(void) {
+        for( u16 j=0; j < MAX_PLAYER_SHOTS; ++j ) {
+        if(
+        shipShots[j].active == true &&
+        (ufo.pos_x + ufo.hitbox_x1) < (shipShots[j].pos_x + shipShots[j].hitbox_x2) &&
+        (ufo.pos_x + ufo.hitbox_x2) > (shipShots[j].pos_x + shipShots[j].hitbox_x1) &&
+        (ufo.pos_y + ufo.hitbox_y1) < (shipShots[j].pos_y + shipShots[j].hitbox_y2) &&
+        (ufo.pos_y + ufo.hitbox_y2) > (shipShots[j].pos_y + shipShots[j].hitbox_y1)  ) 
+        {
+        ufo.active = false;
+        shipShots[j].active = false;
+        }
+        }
+        }
+        }
+        for( u16 i=0; i < MAX_UFO_SHOTS; ++i ) {
+        if( ufoShots[i].active == true ) {
+        if( (ufoShots[i].pos_x + ufoShots[i].hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
+        (ufoShots[i].pos_x + ufoShots[i].hitbox_x2) > (shipSprite.pos_x + shipSprite.hitbox_x1) &&
+        (ufoShots[i].pos_y + ufoShots[i].hitbox_y1) < (shipSprite.pos_y + shipSprite.hitbox_y2) &&
+        (ufoShots[i].pos_y + ufoShots[i].hitbox_y2) > (shipSprite.pos_y + shipSprite.hitbox_y1)  ) 
+        {
+        ufoShots[i].active = false;
+        }
+        }
+        }
+         */
+
+
+    }
+
     //---------------------------------------------------------------------------------
+    // Program entry point
+    //---------------------------------------------------------------------------------
+    int main(void) {
+        //---------------------------------------------------------------------------------
+
+        // the vblank interrupt must be enabled for VBlankIntrWait() to work
+        // since the default dispatcher handles the bios flags no vblank handler
+        // is required
+        irqInit();
+        irqEnable(IRQ_VBLANK);
+
+        //consoleDebugInit(DebugDevice_NOCASH);
+        int x = 123;
+        int y = 45;
+
+        REG_DISPCNT = ( MODE_0|BG1_ON | OBJ_ENABLE | OBJ_1D_MAP );	
+
+        // setup palettes
+        dmaCopy( spacePal, BG_PALETTE, spacePalLen );
+        dmaCopy( shotPal, SPRITE_PALETTE, shotPalLen );
+        dmaCopy( shipPal, SPRITE_PALETTE + 16, shipPalLen );
+        dmaCopy( ufoPal, SPRITE_PALETTE + 32, ufoPalLen );
+        dmaCopy( boomPal, SPRITE_PALETTE + 48, boomPalLen );
+        //dmaCopy( gb_rockPal, SPRITE_PALETTE + 64, gb_rockPalLen ); same as UFO.
+
+        // tiles
+        dmaCopy( spaceTiles, TILE_BASE_ADR(0), spaceTilesLen );
+        dmaCopy( spaceMap, MAP_BASE_ADR(8), spaceMapLen );
+
+        dmaCopy( shotTiles, OBJ_BASE_ADR, shotTilesLen );
+        dmaCopy( shipTiles, OBJ_BASE_ADR + 128, shipTilesLen );
+        dmaCopy( ufoTiles, OBJ_BASE_ADR + 128 + 2048, ufoTilesLen );
+        dmaCopy( boomTiles, OBJ_BASE_ADR + 128 + 2048  + 1024, boomTilesLen );
 
 
-    // the vblank interrupt must be enabled for VBlankIntrWait() to work
-    // since the default dispatcher handles the bios flags no vblank handler
-    // is required
-    irqInit();
-    irqEnable(IRQ_VBLANK);
-
-    REG_DISPCNT = ( MODE_0|BG1_ON | OBJ_ENABLE | OBJ_1D_MAP );	
-
-    // setup palettes
-    dmaCopy( spacePal, BG_PALETTE, spacePalLen );
-    dmaCopy( shotPal, SPRITE_PALETTE, shotPalLen );
-    dmaCopy( shipPal, SPRITE_PALETTE + 16, shipPalLen );
-    dmaCopy( ufoPal, SPRITE_PALETTE + 32, ufoPalLen );
-    dmaCopy( boomPal, SPRITE_PALETTE + 48, boomPalLen );
-    //dmaCopy( gb_rockPal, SPRITE_PALETTE + 64, gb_rockPalLen ); same as UFO.
-
-    // tiles
-    dmaCopy( spaceTiles, TILE_BASE_ADR(0), spaceTilesLen );
-    dmaCopy( spaceMap, MAP_BASE_ADR(8), spaceMapLen );
-
-    dmaCopy( shotTiles, OBJ_BASE_ADR, shotTilesLen );
-    dmaCopy( shipTiles, OBJ_BASE_ADR + 128, shipTilesLen );
-    dmaCopy( ufoTiles, OBJ_BASE_ADR + 128 + 2048, ufoTilesLen );
-    dmaCopy( boomTiles, OBJ_BASE_ADR + 128 + 2048  + 1024, boomTilesLen );
+        REG_BG1CNT = ( BG_SIZE_3 | BG_16_COLOR | TILE_BASE(0) | MAP_BASE(8) );
 
 
-    REG_BG1CNT = ( BG_SIZE_3 | BG_16_COLOR | TILE_BASE(0) | MAP_BASE(8) );
+        // clear things out
+        for(int i = 0; i < 128; i++) {
+            OAM_MEM[i].attr0 = ATTR0_DISABLED;
+        }
 
+        // initial ship
+        shipSprite.pos_x = MYFIX(112);
+        shipSprite.pos_y = MYFIX(100);
+        shipSprite.vel_x = MYFIX(0);
+        shipSprite.vel_y = MYFIX(0);
+        shipSprite.active = true;
+        shipSprite.hitbox_x1 = 0;
+        shipSprite.hitbox_y1 = 0;
+        shipSprite.hitbox_x2 = 16;
+        shipSprite.hitbox_y2 = 16;
+        shipSprite.obj_index = 0;
+        OAM_MEM[0].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(MYFIX(shipSprite.pos_y));	
+        OAM_MEM[0].attr1 = ATTR1_SIZE_16 | OBJ_X(MYFIX(shipSprite.pos_x));
+        OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(4) | OBJ_PRIORITY(0);
 
-    // clear things out
-    for(int i = 0; i < 128; i++) {
-        OAM_MEM[i].attr0 = ATTR0_DISABLED;
+        int lastIndex = createShipShots(1);
+        lastIndex = createUFO(lastIndex);	
+        //lastIndex = createUFOShot(lastIndex);	
+
+        //iprintf("\x1b[1;1H");
+        //iprintf("tX: %d iTX: %d   \n", thrustX[0], fixToInt(thrustX[0]) );
+        //iprintf("tY: %d iTY: %d   \n", thrustY[0], fixToInt(thrustY[0]) );
+
+        //myfix testval = MYFIX( 10.5 );
+        //iprintf("tV: %d iTV: %d   \n", testval, fixToInt(testval));     
+
+        while (1) {
+            VBlankIntrWait();
+            //        iprintf("\x1b[1;1H");
+            //        iprintf("d: %d a: %d v: %d  \n", shipDir, fixToInt(shipAccelX), fixToInt( shipSprite.vel_x )); 
+            readKeys();
+            update();
+            checkCollisions();
+        }
     }
-
-    // initial ship
-    shipSprite.pos_x = 112;
-    shipSprite.pos_y = 100;
-    shipSprite.vel_x = 0;
-    shipSprite.vel_y = 0;
-    shipSprite.active = true;
-    shipSprite.hitbox_x1 = 0;
-    shipSprite.hitbox_y1 = 0;
-    shipSprite.hitbox_x2 = 16;
-    shipSprite.hitbox_y2 = 16;
-    shipSprite.obj_index = 0;
-    OAM_MEM[0].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(shipSprite.pos_y);	
-    OAM_MEM[0].attr1 = ATTR1_SIZE_16 | OBJ_X(shipSprite.pos_x);
-    OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(4) | OBJ_PRIORITY(0);
-
-    int lastIndex = createShipShots(1);
-    lastIndex = createUFO(lastIndex);	
-    //lastIndex = createUFOShot(lastIndex);	
-
-
-    while (1) {
-        VBlankIntrWait();
-        readKeys();
-        update();
-        checkCollisions();
-    }
-}
 
 
