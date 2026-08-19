@@ -57,9 +57,9 @@ myfix shipAccelY = MYFIX(0.0);
 //myfix ship_warp_pos_x = MYFIX(0.0);
 //myfix ship_warp_pos_y = MYFIX(0.0);
 u8 ship_state = ship_dead;
-static u16 score = 0;
-static s16 lives = 3;
-static s16 ship_ticks = 0;
+static int score = 0;
+static int lives = 3;
+static int ship_ticks = 0;
 u8 shipDir = 0;
 const u8 angleStep = 2;
 
@@ -81,14 +81,14 @@ const int32_t smallRockOffset = 128 + 2048 + 1024 + 4608 + 4096 + 1024;
 #define SHOT_OFFSET_X       2
 #define SHOT_OFFSET_Y       2
 #define MAX_PLAYER_SHOTS    4
-#define PLAYER_SHOT_TIME    50
+#define PLAYER_SHOT_TIME    80
 
 
 
 
 /////////////////////////////////////////////////////////////////////////////////
 // Define enemy constants
-#define MAX_ROCKS           40
+#define MAX_ROCKS           10
 #define MAX_EXPLOSIONS      8
 
 
@@ -117,12 +117,12 @@ struct CP_SPRITE explosions[MAX_EXPLOSIONS];
 
 #define CAMERA_PADDING        40
 
-s16 camPosX; // relative to total world map
-s16 camPosY; // relative to total world map
+int camPosX; // relative to total world map
+int camPosY; // relative to total world map
 
 static u8 tick = 0; // just a common tick for everyone to use
-s16 delayTicks = -1; // count down times to delay events, like rocks at the start of a level.
-u16 level = 1;
+int delayTicks = -1; // count down times to delay events, like rocks at the start of a level.
+int level = 1;
 bool levelStarted = false;
 
 enum GAME_MODE {
@@ -178,8 +178,8 @@ int createShipShots(int start_ind) {
 void readKeys() {
     scanKeys();
 
-    u16 down = keysDown();
-    //u16 up = keysUp();
+    int down = keysDown();
+    //int up = keysUp();
     u32 keys = ~(REG_KEYINPUT);
     //if( game_mode == play_mode ) {
     if( true ) {
@@ -291,8 +291,8 @@ void readKeys() {
 
 int createUFO(int start_ind) {
     int curr_ind = start_ind;
-    ufo.pos_x = MYFIX(0);
-    ufo.pos_y = MYFIX(0);
+    ufo.pos_x = MYFIX(-8);
+    ufo.pos_y = MYFIX(-8);
     ufo.vel_x = MYFIX(0);
     ufo.vel_y = MYFIX(0);
     ufo.active = true;
@@ -307,8 +307,8 @@ int createUFO(int start_ind) {
 
     ufo.obj_index = curr_ind;
 
-    OAM_MEM[ufo.obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(ufo.pos_y);	
-    OAM_MEM[ufo.obj_index].attr1 = ATTR1_SIZE_16  | OBJ_X(ufo.pos_x);
+    OAM_MEM[ufo.obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(fixToInt(ufo.pos_y));	
+    OAM_MEM[ufo.obj_index].attr1 = ATTR1_SIZE_16  | OBJ_X(fixToInt(ufo.pos_x));
     OAM_MEM[ufo.obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR(ufoOffset/32) | OBJ_PRIORITY(0);
 
     curr_ind++;
@@ -387,30 +387,36 @@ void update() {
 
 
     // update player position
-    int x = fixToInt(shipSprite.pos_x) - camPosX;
     int y = fixToInt(shipSprite.pos_y) - camPosY;
-    OAM_MEM[0].attr0 &= 0xff00;
-    OAM_MEM[0].attr0 |= ( y & 0x00ff );
+    if( y < 256 && y >= 0 ) {
+        OAM_MEM[0].attr0 &= 0xff00;
+        OAM_MEM[0].attr0 |= ( y & 0x00ff );
+    }
+    int x = fixToInt(shipSprite.pos_x) - camPosX;
     OAM_MEM[0].attr1 &= 0xfe00;
     OAM_MEM[0].attr1 |= ( x & 0x01ff );
 
 
     // shots
-    for( u16 i=0; i < MAX_PLAYER_SHOTS; ++i ) {
+    for( int i=0; i < MAX_PLAYER_SHOTS; ++i ) {
         if( shipShots[i].active == true ) {
             shipShots[i].pos_x +=  shipShots[i].vel_x;
             shipShots[i].pos_y +=  shipShots[i].vel_y;
-            int rx = fixToInt( shipShots[i].pos_x ) - camPosX;
-            int ry = fixToInt( shipShots[i].pos_y ) - camPosY;
+            x = fixToInt( shipShots[i].pos_x ) - camPosX;
+            y = fixToInt( shipShots[i].pos_y ) - camPosY;
             shipShots[i].ticks++;
             if(shipShots[i].ticks > PLAYER_SHOT_TIME ){
                 shipShots[i].active = false;
             }
             //SPR_setPosition(shipShots[i].sprite,shipShots[i].pos_x,shipShots[i].pos_y);
-            OAM_MEM[shipShots[i].obj_index].attr0 &= 0xff00;
-            OAM_MEM[shipShots[i].obj_index].attr0 |= ry & 0x00ff;
+                OAM_MEM[shipShots[i].obj_index].attr0 &= 0xff00;
+            if( y < 160 && y >= -8 ) {
+                OAM_MEM[shipShots[i].obj_index].attr0 |= y & 0x00ff;
+            } else {
+                OAM_MEM[shipShots[i].obj_index].attr0 |= 166;
+            }
             OAM_MEM[shipShots[i].obj_index].attr1 &= 0xfe00;
-            OAM_MEM[shipShots[i].obj_index].attr1 |= rx & 0x01ff;
+            OAM_MEM[shipShots[i].obj_index].attr1 |= x & 0x01ff;
         } else {
             OAM_MEM[shipShots[i].obj_index].attr0 &= 0xff00;
             OAM_MEM[shipShots[i].obj_index].attr0 |=  166 ;
@@ -420,12 +426,26 @@ void update() {
     }
 
     // ROCKS
-    for( u16 i=0; i < MAX_ROCKS; ++i ) {
+    for( int i=0; i < MAX_ROCKS; ++i ) {
         if( rocks[i].active == true ) {
             rocks[i].pos_x +=  rocks[i].vel_x;
+            if( rocks[i].pos_x < MYFIX(-32) ) {
+                rocks[i].pos_x = PLAYFIELD_WIDTH;
+            }else if( rocks[i].pos_x > MYFIX(PLAYFIELD_WIDTH) ) {
+                rocks[i].pos_x = MYFIX(0);
+            }
+
+
             rocks[i].pos_y +=  rocks[i].vel_y;
-            int rx = fixToInt( rocks[i].pos_x ) - camPosX;
-            int ry = fixToInt( rocks[i].pos_y ) - camPosY;
+            if( rocks[i].pos_y < MYFIX(-32) ) {
+                rocks[i].pos_y = PLAYFIELD_HEIGHT;
+            }else if( rocks[i].pos_y > MYFIX(PLAYFIELD_HEIGHT) ) {
+                rocks[i].pos_y = MYFIX(0);
+            }
+
+
+            x = fixToInt( rocks[i].pos_x ) - camPosX;
+            y = fixToInt( rocks[i].pos_y ) - camPosY;
 
             if( tick % rocks[i].frame_delay == 0 ) {                
                 rocks[i].frame++;
@@ -436,10 +456,14 @@ void update() {
 
 
             //SPR_setPosition(rocks[i].sprite,rocks[i].pos_x,rocks[i].pos_y);
-            OAM_MEM[rocks[i].obj_index].attr0 &= 0xff00;
-            OAM_MEM[rocks[i].obj_index].attr0 |= ( ry & 0x00ff );
+                OAM_MEM[rocks[i].obj_index].attr0 &= 0xff00;
+            if( y < 160 && y > -32)  {
+                OAM_MEM[rocks[i].obj_index].attr0 |= ( y & 0x00ff );
+            } else {
+                OAM_MEM[rocks[i].obj_index].attr0 |= 166;
+            }
             OAM_MEM[rocks[i].obj_index].attr1 &= 0xfe00;
-            OAM_MEM[rocks[i].obj_index].attr1 |= ( rx & 0x01ff );
+            OAM_MEM[rocks[i].obj_index].attr1 |= ( x & 0x01ff );
             OAM_MEM[rocks[i].obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( rocks[i].frame*16 +  rockOffset/32) | OBJ_PRIORITY(0);
         } else {
             OAM_MEM[rocks[i].obj_index].attr0 &= 0xff00;
@@ -450,34 +474,73 @@ void update() {
     }
 
     //    // update ufos
-    //    if( ufo.active == true ) {
-    if( tick % ufo.frame_delay == 0 ) {                
-        ufo.frame++;
-        if( ufo.frame >= ufo.frame_count ) {
-            ufo.frame = 0;
+    if( ufo.active == true ) {
+        if( tick % ufo.frame_delay == 0 ) {                
+            ufo.frame++;
+            if( ufo.frame >= ufo.frame_count ) {
+                ufo.frame = 0;
+            }
         }
+        x = fixToInt( ufo.pos_x ) - camPosX;
+        y = fixToInt( ufo.pos_y ) - camPosY;
+        OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
+        if( y < 160 && y >= -16  ) {
+        OAM_MEM[ufo.obj_index].attr0 |= ( y & 0x00ff );
+        } else {
+        OAM_MEM[ufo.obj_index].attr0 |= 166;
+        }
+        OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
+        OAM_MEM[ufo.obj_index].attr1 |= ( x & 0x01ff );
+        OAM_MEM[ufo.obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( ufo.frame*ufo.tile_step +  ufoOffset/32) | OBJ_PRIORITY(0);
+    } else {
+        //SPR_setPosition( ufo.sprite, -32, 230 );
+        OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
+        OAM_MEM[ufo.obj_index].attr0 |=  166 ;
+        OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
+        OAM_MEM[ufo.obj_index].attr1 |=  0 ;
     }
-
-    OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
-    OAM_MEM[ufo.obj_index].attr0 |= ( fixToInt(ufo.pos_y) & 0x00ff );
-    OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
-    OAM_MEM[ufo.obj_index].attr1 |= ( fixToInt(ufo.pos_x )& 0x01ff );
-    OAM_MEM[ufo.obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( ufo.frame*ufo.tile_step +  ufoOffset/32) | OBJ_PRIORITY(0);
-    //    } else {
-    //        //SPR_setPosition( ufo.sprite, -32, 230 );
-    //        OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
-    //        OAM_MEM[ufo.obj_index].attr0 |=  166 ;
-    //        OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
-    //        OAM_MEM[ufo.obj_index].attr1 |=  0 ;
-    //    }
 
 }
 
 
 
 void checkCollisions() {
+
+    // check  
+    for( int i=0; i < MAX_PLAYER_SHOTS; ++i ) {
+        if( shipShots[i].active == true ) {
+            // check if UFO hit.
+            if(     ufo.active &&
+                    (ufo.pos_x + ufo.hitbox_x1) < (shipShots[i].pos_x + shipShots[i].hitbox_x2) &&
+                    (ufo.pos_x + ufo.hitbox_x2) > (shipShots[i].pos_x + shipShots[i].hitbox_x1) &&
+                    (ufo.pos_y + ufo.hitbox_y1) < (shipShots[i].pos_y + shipShots[i].hitbox_y2) &&
+                    (ufo.pos_y + ufo.hitbox_y2) > (shipShots[i].pos_y + shipShots[i].hitbox_y1)  ) 
+            {
+                ufo.active = false;
+                shipShots[i].active = false;
+            } 
+            else 
+            {   
+                // check if rock hit
+                for( int j=0; j < MAX_ROCKS; ++j ) {
+                    if(     rocks[j].active &&
+                            (rocks[j].pos_x + rocks[j].hitbox_x1) < (shipShots[i].pos_x + shipShots[i].hitbox_x2) &&
+                            (rocks[j].pos_x + rocks[j].hitbox_x2) > (shipShots[i].pos_x + shipShots[i].hitbox_x1) &&
+                            (rocks[j].pos_y + rocks[j].hitbox_y1) < (shipShots[i].pos_y + shipShots[i].hitbox_y2) &&
+                            (rocks[j].pos_y + rocks[j].hitbox_y2) > (shipShots[i].pos_y + shipShots[i].hitbox_y1)  ) 
+                    {
+                        rocks[j].active = false;
+                        shipShots[i].active = false;
+                        break;  // only do one
+                    } 
+                }
+            }
+
+
+        }
+    }
     /*
-       for( u16 i=0; i < MAX_UFOS; ++i ) {
+       for( int i=0; i < MAX_UFOS; ++i ) {
        if( ufo.active == true ) {
     // check if ship has hit
     if( (ufo.pos_x + ufo.hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
@@ -487,32 +550,20 @@ void checkCollisions() {
     {
     ufo.active = false;
     }
-
-    for( u16 j=0; j < MAX_PLAYER_SHOTS; ++j ) {
-    if(
-    shipShots[j].active == true &&
-    (ufo.pos_x + ufo.hitbox_x1) < (shipShots[j].pos_x + shipShots[j].hitbox_x2) &&
-    (ufo.pos_x + ufo.hitbox_x2) > (shipShots[j].pos_x + shipShots[j].hitbox_x1) &&
-    (ufo.pos_y + ufo.hitbox_y1) < (shipShots[j].pos_y + shipShots[j].hitbox_y2) &&
-    (ufo.pos_y + ufo.hitbox_y2) > (shipShots[j].pos_y + shipShots[j].hitbox_y1)  ) 
-    {
-    ufo.active = false;
-    shipShots[j].active = false;
-    }
-    }
-    }
-    }
-    for( u16 i=0; i < MAX_UFO_SHOTS; ++i ) {
-    if( ufoShots[i].active == true ) {
-    if( (ufoShots[i].pos_x + ufoShots[i].hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
-    (ufoShots[i].pos_x + ufoShots[i].hitbox_x2) > (shipSprite.pos_x + shipSprite.hitbox_x1) &&
-    (ufoShots[i].pos_y + ufoShots[i].hitbox_y1) < (shipSprite.pos_y + shipSprite.hitbox_y2) &&
-    (ufoShots[i].pos_y + ufoShots[i].hitbox_y2) > (shipSprite.pos_y + shipSprite.hitbox_y1)  ) 
-    {
-    ufoShots[i].active = false;
-    }
-    }
-    }
+     */
+    /*}
+      }
+      for( int i=0; i < MAX_UFO_SHOTS; ++i ) {
+      if( ufoShots[i].active == true ) {
+      if( (ufoShots[i].pos_x + ufoShots[i].hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
+      (ufoShots[i].pos_x + ufoShots[i].hitbox_x2) > (shipSprite.pos_x + shipSprite.hitbox_x1) &&
+      (ufoShots[i].pos_y + ufoShots[i].hitbox_y1) < (shipSprite.pos_y + shipSprite.hitbox_y2) &&
+      (ufoShots[i].pos_y + ufoShots[i].hitbox_y2) > (shipSprite.pos_y + shipSprite.hitbox_y1)  ) 
+      {
+      ufoShots[i].active = false;
+      }
+      }
+      }
      */
 
 
@@ -573,7 +624,7 @@ static void updateCameraPos() {
 
 
 
-void createRock(u8 i, u16 rockType, myfix x, myfix y ) {
+void createRock(u8 i, int rockType, myfix x, myfix y ) {
 }
 
 int createRocks(int start_ind) {
@@ -583,7 +634,7 @@ int createRocks(int start_ind) {
         rocks[i].pos_y = MYFIX(random()%(PLAYFIELD_HEIGHT-32));
 
         // use ranodm direction for rock motion
-        u16 rot = random() % 256; 
+        int rot = random() % 256; 
         myfix vel = MYFIX(0.8);
         rocks[i].vel_x = fix_mul( vel, thrustX[rot]  );
         rocks[i].vel_y = fix_mul( vel, thrustY[rot]  );
