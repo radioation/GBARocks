@@ -291,8 +291,8 @@ void readKeys() {
 
 int createUFO(int start_ind) {
     int curr_ind = start_ind;
-    ufo.pos_x = MYFIX(-8);
-    ufo.pos_y = MYFIX(-8);
+    ufo.pos_x = MYFIX(40);
+    ufo.pos_y = MYFIX(40);
     ufo.vel_x = MYFIX(0);
     ufo.vel_y = MYFIX(0);
     ufo.active = true;
@@ -500,9 +500,57 @@ void update() {
         OAM_MEM[ufo.obj_index].attr1 |=  0 ;
     }
 
+    for( int i=0; i < MAX_EXPLOSIONS ; ++i ) {
+        if( explosions[i].active == true ) {
+            x = fixToInt( explosions[i].pos_x ) - camPosX;
+            y = fixToInt( explosions[i].pos_y ) - camPosY;
+            if( explosions[i]. ticks < 9 ) {
+                OAM_MEM[explosions[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(y);
+                OAM_MEM[explosions[i].obj_index].attr1 = ATTR1_SIZE_32  | OBJ_X(x);
+                OAM_MEM[explosions[i].obj_index].attr2 = ATTR2_PALETTE(3) | OBJ_CHAR( explosions[i].frame*16 +  boomOffset/32) | OBJ_PRIORITY(0);
+                explosions[i].ticks++;
+                explosions[i].frame++;
+
+            } else {
+                explosions[i].active = false;
+        OAM_MEM[explosions[i].obj_index].attr0 &= 0xff00;
+        OAM_MEM[explosions[i].obj_index].attr0 |=  166 ;
+        OAM_MEM[explosions[i].obj_index].attr1 &= 0xfe00;
+        OAM_MEM[explosions[i].obj_index].attr1 |=  0 ;
+            }
+
+        }
+    }
+
 }
 
 
+int currentExplosion = 0;
+
+static void showExplosion(myfix pos_x, myfix pos_y)
+{
+    if (explosions[currentExplosion].active == false)
+    {
+        // use it
+        explosions[currentExplosion].active = true;
+        explosions[currentExplosion].ticks = 0;
+        explosions[currentExplosion].frame = 0;
+        explosions[currentExplosion].pos_x = pos_x;
+        explosions[currentExplosion].pos_y = pos_y;
+
+        //SPR_setVisibility(explosion_sprites[currentExplosion], VISIBLE);
+        //SPR_setPosition(explosion_sprites[currentExplosion], x, y );
+
+        //XGM_startPlayPCM(SND_EXPLOSION, 10, SOUND_PCM_CH3);
+
+        // point to next explosion
+        ++currentExplosion;
+        if (currentExplosion >= MAX_EXPLOSIONS)
+        {
+            currentExplosion = 0;
+        }
+    }
+}
 
 void checkCollisions() {
 
@@ -518,6 +566,7 @@ void checkCollisions() {
             {
                 ufo.active = false;
                 shipShots[i].active = false;
+                showExplosion( ufo.pos_x-MYFIX(8), ufo.pos_y-MYFIX(8) );
             } 
             else 
             {   
@@ -531,6 +580,7 @@ void checkCollisions() {
                     {
                         rocks[j].active = false;
                         shipShots[i].active = false;
+                        showExplosion( rocks[j].pos_x, rocks[j].pos_y );
                         break;  // only do one
                     } 
                 }
@@ -691,6 +741,8 @@ int createExplosions(int start_ind) {
 }
 
 
+
+
 //---------------------------------------------------------------------------------
 // Program entry point
 //---------------------------------------------------------------------------------
@@ -753,11 +805,11 @@ int main(void) {
     OAM_MEM[0].attr1 = ATTR1_SIZE_16 | OBJ_X(MYFIX(shipSprite.pos_x));
     OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(shipOffset/32) | OBJ_PRIORITY(0);
 
-    int lastIndex = createShipShots(1);
+    int lastIndex = createExplosions(1);	
     lastIndex = createUFO(lastIndex);	
     lastIndex = createRocks(lastIndex);	
     lastIndex = createUFOShot(lastIndex);	
-    lastIndex = createExplosions(lastIndex);	
+    lastIndex = createShipShots(lastIndex);
 
     //iprintf("\x1b[1;1H");
     //iprintf("tX: %d iTX: %d   \n", thrustX[0], fixToInt(thrustX[0]) );
