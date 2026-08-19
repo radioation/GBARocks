@@ -274,7 +274,7 @@ void readKeys() {
 int createUFO(int start_ind) {
     int curr_ind = start_ind;
     ufo.pos_x = MYFIX(0);
-    ufo.pos_y = MYFIX(160);
+    ufo.pos_y = MYFIX(0);
     ufo.vel_x = MYFIX(0);
     ufo.vel_y = MYFIX(0);
     ufo.active = true;
@@ -282,6 +282,10 @@ int createUFO(int start_ind) {
     ufo.hitbox_y1 = 0;
     ufo.hitbox_x2 = 16;
     ufo.hitbox_y2 = 16;
+        ufo.tile_step = 4;
+        ufo.frame_count = 8;
+        ufo.frame = random()%8;
+        ufo.frame_delay = 2;
 
     ufo.obj_index = curr_ind;
 
@@ -403,11 +407,18 @@ void update() {
 
         //    // update ufos
         //    if( ufo.active == true ) {
-        //        // actually not needed here, maybe later
-        //        OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
-        //        OAM_MEM[ufo.obj_index].attr0 |= ( ufo.pos_y & 0x00ff );
-        //        OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
-        //        OAM_MEM[ufo.obj_index].attr1 |= ( ufo.pos_x & 0x01ff );
+                if( tick % ufo.frame_delay == 0 ) {                
+                    ufo.frame++;
+                    if( ufo.frame >= ufo.frame_count ) {
+                        ufo.frame = 0;
+                    }
+                }
+                
+                OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
+                OAM_MEM[ufo.obj_index].attr0 |= ( fixToInt(ufo.pos_y) & 0x00ff );
+                OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
+                OAM_MEM[ufo.obj_index].attr1 |= ( fixToInt(ufo.pos_x )& 0x01ff );
+                OAM_MEM[ufo.obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( ufo.frame*ufo.tile_step +  ufoOffset/32) | OBJ_PRIORITY(0);
         //    } else {
         //        //SPR_setPosition( ufo.sprite, -32, 230 );
         //        OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
