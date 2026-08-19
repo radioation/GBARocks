@@ -527,6 +527,11 @@ int createRocks(int start_ind) {
 		rocks[i].hitbox_y1 = MYFIX(2);
 		rocks[i].hitbox_x2 = MYFIX(30);
 		rocks[i].hitbox_y2 = MYFIX(30);
+        rocks[i].tile_index = rock
+        rocks[i].tile_step = 16:
+        rocks[i].frame_count = 8;
+        rocks[i].frame = random()%8;
+        rocks[i].frame_delay =10 ;
 
 		//rocks[i].sprite = SPR_addSprite( &rock, -32, -32, TILE_ATTR( PAL3, 0, FALSE, FALSE ));
 		rocks[i].obj_index = curr_ind;
