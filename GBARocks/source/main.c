@@ -120,7 +120,7 @@ struct CP_SPRITE ufoShot; // single shot
 s16 camPosX; // relative to total world map
 s16 camPosY; // relative to total world map
 
-static u8 tick = 0; // just a commn tick for everyone to use
+static u8 tick = 0; // just a common tick for everyone to use
 s16 delayTicks = -1; // count down times to delay events, like rocks at the start of a level.
 u16 level = 1;
 bool levelStarted = false;
@@ -379,11 +379,20 @@ void update() {
                 int rx = fixToInt( rocks[i].pos_x ) - camPosX;
                 int ry = fixToInt( rocks[i].pos_y ) - camPosY;
 
+                if( tick % rocks[i].frame_delay == 0 ) {                
+                    rocks[i].frame++;
+                    if( rocks[i].frame >= rocks[i].frame_count ) {
+                        rocks[i].frame = 0;
+                    }
+                }
+
+
                 //SPR_setPosition(rocks[i].sprite,rocks[i].pos_x,rocks[i].pos_y);
                 OAM_MEM[rocks[i].obj_index].attr0 &= 0xff00;
                 OAM_MEM[rocks[i].obj_index].attr0 |= ( ry & 0x00ff );
                 OAM_MEM[rocks[i].obj_index].attr1 &= 0xfe00;
                 OAM_MEM[rocks[i].obj_index].attr1 |= ( rx & 0x01ff );
+                OAM_MEM[rocks[i].obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( rocks[i].frame*16 +  rockOffset/32) | OBJ_PRIORITY(0);
             } else {
                 OAM_MEM[rocks[i].obj_index].attr0 &= 0xff00;
                 OAM_MEM[rocks[i].obj_index].attr0 |=  166 ;
@@ -391,21 +400,21 @@ void update() {
                 OAM_MEM[rocks[i].obj_index].attr1 |=  0 ;
             }
         }
-    
-    //    // update ufos
-    //    if( ufo.active == true ) {
-    //        // actually not needed here, maybe later
-    //        OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
-    //        OAM_MEM[ufo.obj_index].attr0 |= ( ufo.pos_y & 0x00ff );
-    //        OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
-    //        OAM_MEM[ufo.obj_index].attr1 |= ( ufo.pos_x & 0x01ff );
-    //    } else {
-    //        //SPR_setPosition( ufo.sprite, -32, 230 );
-    //        OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
-    //        OAM_MEM[ufo.obj_index].attr0 |=  166 ;
-    //        OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
-    //        OAM_MEM[ufo.obj_index].attr1 |=  0 ;
-    //    }
+
+        //    // update ufos
+        //    if( ufo.active == true ) {
+        //        // actually not needed here, maybe later
+        //        OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
+        //        OAM_MEM[ufo.obj_index].attr0 |= ( ufo.pos_y & 0x00ff );
+        //        OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
+        //        OAM_MEM[ufo.obj_index].attr1 |= ( ufo.pos_x & 0x01ff );
+        //    } else {
+        //        //SPR_setPosition( ufo.sprite, -32, 230 );
+        //        OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
+        //        OAM_MEM[ufo.obj_index].attr0 |=  166 ;
+        //        OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
+        //        OAM_MEM[ufo.obj_index].attr1 |=  0 ;
+        //    }
 
 }
 
@@ -512,60 +521,60 @@ static void updateCameraPos() {
 void createRock(u8 i, u16 rockType, myfix x, myfix y ) {
 }
 int createRocks(int start_ind) {
-	int curr_ind = start_ind;
-	for( int i=0; i < MAX_ROCKS; ++i ) {
-		rocks[i].pos_x = MYFIX(random()%(PLAYFIELD_WIDTH-32));  // random starting position for rock sprites
-		rocks[i].pos_y = MYFIX(random()%(PLAYFIELD_HEIGHT-32));
+    int curr_ind = start_ind;
+    for( int i=0; i < MAX_ROCKS; ++i ) {
+        rocks[i].pos_x = MYFIX(random()%(PLAYFIELD_WIDTH-32));  // random starting position for rock sprites
+        rocks[i].pos_y = MYFIX(random()%(PLAYFIELD_HEIGHT-32));
 
-		// use ranodm direction for rock motion
-		u16 rot = random() % 256; 
-		myfix vel = MYFIX(0.8);
-		rocks[i].vel_x = fix_mul( vel, thrustX[rot]  );
-		rocks[i].vel_y = fix_mul( vel, thrustY[rot]  );
-		rocks[i].active = true;
-		rocks[i].hitbox_x1 = MYFIX(2);
-		rocks[i].hitbox_y1 = MYFIX(2);
-		rocks[i].hitbox_x2 = MYFIX(30);
-		rocks[i].hitbox_y2 = MYFIX(30);
-        rocks[i].tile_index = rock
-        rocks[i].tile_step = 16:
+        // use ranodm direction for rock motion
+        u16 rot = random() % 256; 
+        myfix vel = MYFIX(0.8);
+        rocks[i].vel_x = fix_mul( vel, thrustX[rot]  );
+        rocks[i].vel_y = fix_mul( vel, thrustY[rot]  );
+        rocks[i].active = true;
+        rocks[i].hitbox_x1 = MYFIX(2);
+        rocks[i].hitbox_y1 = MYFIX(2);
+        rocks[i].hitbox_x2 = MYFIX(30);
+        rocks[i].hitbox_y2 = MYFIX(30);
+        rocks[i].tile_index = rockOffset;
+        rocks[i].tile_step = 16;
         rocks[i].frame_count = 8;
         rocks[i].frame = random()%8;
-        rocks[i].frame_delay =10 ;
+        rocks[i].frame_delay = 10;
 
-		//rocks[i].sprite = SPR_addSprite( &rock, -32, -32, TILE_ATTR( PAL3, 0, FALSE, FALSE ));
-		rocks[i].obj_index = curr_ind;
-		OAM_MEM[rocks[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(fixToInt(rocks[i].pos_y));
-		OAM_MEM[rocks[i].obj_index].attr1 = ATTR1_SIZE_32  | OBJ_X(fixToInt(rocks[i].pos_x));
-		OAM_MEM[rocks[i].obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR(16 + rockOffset/32) | OBJ_PRIORITY(0);
-		//	SPR_setAnim( rocks[i].sprite, 0 );
-	    curr_ind++;
-	}
-	return curr_ind;
+        //rocks[i].sprite = SPR_addSprite( &rock, -32, -32, TILE_ATTR( PAL3, 0, FALSE, FALSE ));
+        rocks[i].obj_index = curr_ind;
+        OAM_MEM[rocks[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(fixToInt(rocks[i].pos_y));
+        OAM_MEM[rocks[i].obj_index].attr1 = ATTR1_SIZE_32  | OBJ_X(fixToInt(rocks[i].pos_x));
+        OAM_MEM[rocks[i].obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( rocks[i].frame*16 +  rockOffset/32) | OBJ_PRIORITY(0);
+        //	SPR_setAnim( rocks[i].sprite, 0 );
+        curr_ind++;
+    }
+    return curr_ind;
 
-	/*
-	   obj_pos_x[i] = x;
-	   obj_pos_y[i] = y;
-	   u8 rot = random();
-	   obj_live[i] = true;
-	   myfix vel = rockVelocity;
-	   if( rockType == ROCK ) {
-	   obj_hit_w[i] = MYFIX(30);
-	   obj_sprites[i] = SPR_addSprite(&rock, -32, -32, TILE_ATTR(PAL3, 0, FALSE, FALSE));
-	   } else if ( rockType == MID_ROCK ) {
-	   vel = rockVelocity + MYFIX(2);
-	   obj_sprites[i] = SPR_addSprite(&mid_rock, -32, -32, TILE_ATTR(PAL3, 0, FALSE, FALSE));
-	   obj_hit_w[i] = MYFIX(22);
-	   } else if ( rockType == SMALL_ROCK ) {
-	   vel = rockVelocity + MYFIX(4);
-	   obj_sprites[i] = SPR_addSprite(&small_rock, -32, -32, TILE_ATTR(PAL3, 0, FALSE, FALSE));
-	   obj_hit_w[i] = MYFIX(14);
-	   }
-	   obj_speed_x[i] = F16_mul( vel, thrustX[rot] );
-	   obj_speed_y[i] = F16_mul( vel, thrustY[rot] );
-	   SPR_setAnim(obj_sprites[i], i % 4);
-	   obj_type[i] = rockType;
-	   */
+    /*
+       obj_pos_x[i] = x;
+       obj_pos_y[i] = y;
+       u8 rot = random();
+       obj_live[i] = true;
+       myfix vel = rockVelocity;
+       if( rockType == ROCK ) {
+       obj_hit_w[i] = MYFIX(30);
+       obj_sprites[i] = SPR_addSprite(&rock, -32, -32, TILE_ATTR(PAL3, 0, FALSE, FALSE));
+       } else if ( rockType == MID_ROCK ) {
+       vel = rockVelocity + MYFIX(2);
+       obj_sprites[i] = SPR_addSprite(&mid_rock, -32, -32, TILE_ATTR(PAL3, 0, FALSE, FALSE));
+       obj_hit_w[i] = MYFIX(22);
+       } else if ( rockType == SMALL_ROCK ) {
+       vel = rockVelocity + MYFIX(4);
+       obj_sprites[i] = SPR_addSprite(&small_rock, -32, -32, TILE_ATTR(PAL3, 0, FALSE, FALSE));
+       obj_hit_w[i] = MYFIX(14);
+       }
+       obj_speed_x[i] = F16_mul( vel, thrustX[rot] );
+       obj_speed_y[i] = F16_mul( vel, thrustY[rot] );
+       SPR_setAnim(obj_sprites[i], i % 4);
+       obj_type[i] = rockType;
+     */
 }
 
 /*
@@ -597,92 +606,93 @@ obj_type[i] = NO_TYPE;
 }
 }
 }
-*/
+ */
 
 
 //---------------------------------------------------------------------------------
 // Program entry point
 //---------------------------------------------------------------------------------
 int main(void) {
-	//---------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------
 
-	// the vblank interrupt must be enabled for VBlankIntrWait() to work
-	// since the default dispatcher handles the bios flags no vblank handler
-	// is required
-	irqInit();
-	irqEnable(IRQ_VBLANK);
+    // the vblank interrupt must be enabled for VBlankIntrWait() to work
+    // since the default dispatcher handles the bios flags no vblank handler
+    // is required
+    irqInit();
+    irqEnable(IRQ_VBLANK);
 
-	//consoleDebugInit(DebugDevice_NOCASH);
-	int x = 123;
-	int y = 45;
+    //consoleDebugInit(DebugDevice_NOCASH);
+    int x = 123;
+    int y = 45;
 
-	REG_DISPCNT = ( MODE_0|BG1_ON | OBJ_ENABLE | OBJ_1D_MAP );	
+    REG_DISPCNT = ( MODE_0|BG1_ON | OBJ_ENABLE | OBJ_1D_MAP );	
 
-	// setup palettes
-	dmaCopy( spacePal, BG_PALETTE, spacePalLen );
-	dmaCopy( shotPal, SPRITE_PALETTE, shotPalLen );
-	dmaCopy( shipPal, SPRITE_PALETTE + 16, shipPalLen );
-	dmaCopy( ufoPal, SPRITE_PALETTE + 32, ufoPalLen );
-	dmaCopy( boomPal, SPRITE_PALETTE + 48, boomPalLen );
-	//dmaCopy( gb_rockPal, SPRITE_PALETTE + 64, gb_rockPalLen ); same as UFO.
+    // setup palettes
+    dmaCopy( spacePal, BG_PALETTE, spacePalLen );
+    dmaCopy( shotPal, SPRITE_PALETTE, shotPalLen );
+    dmaCopy( shipPal, SPRITE_PALETTE + 16, shipPalLen );
+    dmaCopy( ufoPal, SPRITE_PALETTE + 32, ufoPalLen );
+    dmaCopy( boomPal, SPRITE_PALETTE + 48, boomPalLen );
+    //dmaCopy( gb_rockPal, SPRITE_PALETTE + 64, gb_rockPalLen ); same as UFO.
 
-	// tiles
-	dmaCopy( spaceTiles, TILE_BASE_ADR(0), spaceTilesLen );
-	dmaCopy( spaceMap, MAP_BASE_ADR(8), spaceMapLen );
+    // tiles
+    dmaCopy( spaceTiles, TILE_BASE_ADR(0), spaceTilesLen );
+    dmaCopy( spaceMap, MAP_BASE_ADR(8), spaceMapLen );
 
-	dmaCopy( shotTiles, OBJ_BASE_ADR, shotTilesLen );
-	dmaCopy( shipTiles, OBJ_BASE_ADR + shipOffset, shipTilesLen );
-	dmaCopy( ufoTiles, OBJ_BASE_ADR + ufoOffset, ufoTilesLen );
-	dmaCopy( boomTiles, OBJ_BASE_ADR + boomOffset, boomTilesLen );
-	dmaCopy( gb_rockTiles, OBJ_BASE_ADR + rockOffset, gb_rockTilesLen );
-	dmaCopy( gb_mid_rockTiles, OBJ_BASE_ADR + midRockOffset, gb_mid_rockTilesLen );
-	dmaCopy( gb_small_rockTiles, OBJ_BASE_ADR + smallRockOffset, gb_small_rockTilesLen );
-
-
-	REG_BG1CNT = ( BG_SIZE_3 | BG_16_COLOR | TILE_BASE(0) | MAP_BASE(8) );
+    dmaCopy( shotTiles, OBJ_BASE_ADR, shotTilesLen );
+    dmaCopy( shipTiles, OBJ_BASE_ADR + shipOffset, shipTilesLen );
+    dmaCopy( ufoTiles, OBJ_BASE_ADR + ufoOffset, ufoTilesLen );
+    dmaCopy( boomTiles, OBJ_BASE_ADR + boomOffset, boomTilesLen );
+    dmaCopy( gb_rockTiles, OBJ_BASE_ADR + rockOffset, gb_rockTilesLen );
+    dmaCopy( gb_mid_rockTiles, OBJ_BASE_ADR + midRockOffset, gb_mid_rockTilesLen );
+    dmaCopy( gb_small_rockTiles, OBJ_BASE_ADR + smallRockOffset, gb_small_rockTilesLen );
 
 
-	// clear things out
-	for(int i = 0; i < 128; i++) {
-		OAM_MEM[i].attr0 = ATTR0_DISABLED;
-	}
+    REG_BG1CNT = ( BG_SIZE_3 | BG_16_COLOR | TILE_BASE(0) | MAP_BASE(8) );
 
-	// initial ship
-	shipSprite.pos_x = MYFIX(112);
-	shipSprite.pos_y = MYFIX(100);
-	shipSprite.vel_x = MYFIX(0);
-	shipSprite.vel_y = MYFIX(0);
-	shipSprite.active = true;
-	shipSprite.hitbox_x1 = 0;
-	shipSprite.hitbox_y1 = 0;
-	shipSprite.hitbox_x2 = 16;
-	shipSprite.hitbox_y2 = 16;
-	shipSprite.obj_index = 0;
-	OAM_MEM[0].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(MYFIX(shipSprite.pos_y));	
-	OAM_MEM[0].attr1 = ATTR1_SIZE_16 | OBJ_X(MYFIX(shipSprite.pos_x));
-	OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(shipOffset/32) | OBJ_PRIORITY(0);
 
-	int lastIndex = createShipShots(1);
-	lastIndex = createUFO(lastIndex);	
-	lastIndex = createRocks(lastIndex);	
-	//lastIndex = createUFOShot(lastIndex);	
+    // clear things out
+    for(int i = 0; i < 128; i++) {
+        OAM_MEM[i].attr0 = ATTR0_DISABLED;
+    }
 
-	//iprintf("\x1b[1;1H");
-	//iprintf("tX: %d iTX: %d   \n", thrustX[0], fixToInt(thrustX[0]) );
-	//iprintf("tY: %d iTY: %d   \n", thrustY[0], fixToInt(thrustY[0]) );
+    // initial ship
+    shipSprite.pos_x = MYFIX(112);
+    shipSprite.pos_y = MYFIX(100);
+    shipSprite.vel_x = MYFIX(0);
+    shipSprite.vel_y = MYFIX(0);
+    shipSprite.active = true;
+    shipSprite.hitbox_x1 = 0;
+    shipSprite.hitbox_y1 = 0;
+    shipSprite.hitbox_x2 = 16;
+    shipSprite.hitbox_y2 = 16;
+    shipSprite.obj_index = 0;
+    OAM_MEM[0].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(MYFIX(shipSprite.pos_y));	
+    OAM_MEM[0].attr1 = ATTR1_SIZE_16 | OBJ_X(MYFIX(shipSprite.pos_x));
+    OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(shipOffset/32) | OBJ_PRIORITY(0);
 
-	//myfix testval = MYFIX( 10.5 );
-	//iprintf("tV: %d iTV: %d   \n", testval, fixToInt(testval));     
+    int lastIndex = createShipShots(1);
+    lastIndex = createUFO(lastIndex);	
+    lastIndex = createRocks(lastIndex);	
+    //lastIndex = createUFOShot(lastIndex);	
 
-	while (1) {
-		VBlankIntrWait();
-		//        iprintf("\x1b[1;1H");
-		//        iprintf("d: %d a: %d v: %d  \n", shipDir, fixToInt(shipAccelX), fixToInt( shipSprite.vel_x )); 
-		readKeys();
-		update();
-		checkCollisions();
-		updateCameraPos();
-	}
+    //iprintf("\x1b[1;1H");
+    //iprintf("tX: %d iTX: %d   \n", thrustX[0], fixToInt(thrustX[0]) );
+    //iprintf("tY: %d iTY: %d   \n", thrustY[0], fixToInt(thrustY[0]) );
+
+    //myfix testval = MYFIX( 10.5 );
+    //iprintf("tV: %d iTV: %d   \n", testval, fixToInt(testval));     
+
+    while (1) {
+        VBlankIntrWait();
+        tick++;
+        //        iprintf("\x1b[1;1H");
+        //        iprintf("d: %d a: %d v: %d  \n", shipDir, fixToInt(shipAccelX), fixToInt( shipSprite.vel_x )); 
+        readKeys();
+        update();
+        checkCollisions();
+        updateCameraPos();
+    }
 }
 
 
