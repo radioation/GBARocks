@@ -43,6 +43,7 @@ struct CP_SPRITE {
     int frame_count;
     int frame;
     int frame_delay;
+    int ticks;
 };
 
 enum SHIP_STATE {
@@ -162,6 +163,7 @@ int createShipShots(int start_ind) {
         shipShots[i].hitbox_y1 = 2;
         shipShots[i].hitbox_x2 = 6;
         shipShots[i].hitbox_y2 = 6;
+        shipShots[i].ticks = 0;
 
         shipShots[i].obj_index = curr_ind;
         OAM_MEM[shipShots[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(shipShots[i].pos_y);	
@@ -196,6 +198,20 @@ void readKeys() {
             OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(4 + (tmpDir << 2)) | OBJ_PRIORITY(0);
 
         }
+        if( down & KEY_A ) {
+            for( int i =0; i < MAX_PLAYER_SHOTS; ++i ) {
+                if( shipShots[i].active == false ) {
+                    shipShots[i].active = true;
+                    shipShots[i].ticks = 0;
+                    shipShots[i].pos_x = shipSprite.pos_x + MYFIX( 4 );
+                    shipShots[i].pos_y = shipSprite.pos_y + MYFIX( 4 );
+                    shipShots[i].vel_x = shipSprite.vel_x + ( thrustX[shipDir] << 4 );
+                    shipShots[i].vel_y = shipSprite.vel_y + ( thrustY[shipDir] << 4 );
+                    break;
+                }
+            }
+
+        }
 
         if( keys & KEY_UP ) {
             shipAccelX = thrustX[shipDir];
@@ -216,6 +232,9 @@ void readKeys() {
                 shipSprite.vel_y = maxSpeedY[shipDir];
                 shipAccelY = MYFIX(0.0);
             }
+
+
+
 
         } else {
             // Decelerate without atan()/atan2()
@@ -282,10 +301,10 @@ int createUFO(int start_ind) {
     ufo.hitbox_y1 = 0;
     ufo.hitbox_x2 = 16;
     ufo.hitbox_y2 = 16;
-        ufo.tile_step = 4;
-        ufo.frame_count = 8;
-        ufo.frame = random()%8;
-        ufo.frame_delay = 2;
+    ufo.tile_step = 4;
+    ufo.frame_count = 8;
+    ufo.frame = random()%8;
+    ufo.frame_delay = 2;
 
     ufo.obj_index = curr_ind;
 
@@ -350,82 +369,79 @@ void update() {
     OAM_MEM[0].attr1 |= ( x & 0x01ff );
 
 
-        // shots
-        for( u16 i=0; i < MAX_PLAYER_SHOTS; ++i ) {
-            if( shipShots[i].active == true ) {
-                shipShots[i].pos_x +=  shipShots[i].vel_x;
-                shipShots[i].pos_y +=  shipShots[i].vel_y;
-                if(shipShots[i].pos_y  < 0 ) {
-                    shipShots[i].pos_x = -16;
-                    shipShots[i].pos_y = 166;
-                    shipShots[i].vel_x = 0;
-                    shipShots[i].vel_y = 0;
-                    shipShots[i].active = false;
-                }
-                //SPR_setPosition(shipShots[i].sprite,shipShots[i].pos_x,shipShots[i].pos_y);
-                OAM_MEM[shipShots[i].obj_index].attr0 &= 0xff00;
-                OAM_MEM[shipShots[i].obj_index].attr0 |= ( shipShots[i].pos_y & 0x00ff );
-                OAM_MEM[shipShots[i].obj_index].attr1 &= 0xfe00;
-                OAM_MEM[shipShots[i].obj_index].attr1 |= ( shipShots[i].pos_x & 0x01ff );
-            } else {
-                OAM_MEM[shipShots[i].obj_index].attr0 &= 0xff00;
-                OAM_MEM[shipShots[i].obj_index].attr0 |=  166 ;
-                OAM_MEM[shipShots[i].obj_index].attr1 &= 0xfe00;
-                OAM_MEM[shipShots[i].obj_index].attr1 |=  0 ;
+    // shots
+    for( u16 i=0; i < MAX_PLAYER_SHOTS; ++i ) {
+        if( shipShots[i].active == true ) {
+            shipShots[i].pos_x +=  shipShots[i].vel_x;
+            shipShots[i].pos_y +=  shipShots[i].vel_y;
+            shipShots[i].ticks++;
+            if(shipShots[i].ticks > PLAYER_SHOT_TIME ){
+                shipShots[i].active = false;
             }
+            //SPR_setPosition(shipShots[i].sprite,shipShots[i].pos_x,shipShots[i].pos_y);
+            OAM_MEM[shipShots[i].obj_index].attr0 &= 0xff00;
+            OAM_MEM[shipShots[i].obj_index].attr0 |= ( fixToInt(shipShots[i].pos_y) & 0x00ff );
+            OAM_MEM[shipShots[i].obj_index].attr1 &= 0xfe00;
+            OAM_MEM[shipShots[i].obj_index].attr1 |= ( fixToInt(shipShots[i].pos_x) & 0x01ff );
+        } else {
+            OAM_MEM[shipShots[i].obj_index].attr0 &= 0xff00;
+            OAM_MEM[shipShots[i].obj_index].attr0 |=  166 ;
+            OAM_MEM[shipShots[i].obj_index].attr1 &= 0xfe00;
+            OAM_MEM[shipShots[i].obj_index].attr1 |=  0 ;
         }
-   
-        // ROCKS
-        for( u16 i=0; i < MAX_ROCKS; ++i ) {
-            if( rocks[i].active == true ) {
-                rocks[i].pos_x +=  rocks[i].vel_x;
-                rocks[i].pos_y +=  rocks[i].vel_y;
-                int rx = fixToInt( rocks[i].pos_x ) - camPosX;
-                int ry = fixToInt( rocks[i].pos_y ) - camPosY;
+    }
 
-                if( tick % rocks[i].frame_delay == 0 ) {                
-                    rocks[i].frame++;
-                    if( rocks[i].frame >= rocks[i].frame_count ) {
-                        rocks[i].frame = 0;
-                    }
+    // ROCKS
+    for( u16 i=0; i < MAX_ROCKS; ++i ) {
+        if( rocks[i].active == true ) {
+            rocks[i].pos_x +=  rocks[i].vel_x;
+            rocks[i].pos_y +=  rocks[i].vel_y;
+            int rx = fixToInt( rocks[i].pos_x ) - camPosX;
+            int ry = fixToInt( rocks[i].pos_y ) - camPosY;
+
+            if( tick % rocks[i].frame_delay == 0 ) {                
+                rocks[i].frame++;
+                if( rocks[i].frame >= rocks[i].frame_count ) {
+                    rocks[i].frame = 0;
                 }
-
-
-                //SPR_setPosition(rocks[i].sprite,rocks[i].pos_x,rocks[i].pos_y);
-                OAM_MEM[rocks[i].obj_index].attr0 &= 0xff00;
-                OAM_MEM[rocks[i].obj_index].attr0 |= ( ry & 0x00ff );
-                OAM_MEM[rocks[i].obj_index].attr1 &= 0xfe00;
-                OAM_MEM[rocks[i].obj_index].attr1 |= ( rx & 0x01ff );
-                OAM_MEM[rocks[i].obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( rocks[i].frame*16 +  rockOffset/32) | OBJ_PRIORITY(0);
-            } else {
-                OAM_MEM[rocks[i].obj_index].attr0 &= 0xff00;
-                OAM_MEM[rocks[i].obj_index].attr0 |=  166 ;
-                OAM_MEM[rocks[i].obj_index].attr1 &= 0xfe00;
-                OAM_MEM[rocks[i].obj_index].attr1 |=  0 ;
             }
-        }
 
-        //    // update ufos
-        //    if( ufo.active == true ) {
-                if( tick % ufo.frame_delay == 0 ) {                
-                    ufo.frame++;
-                    if( ufo.frame >= ufo.frame_count ) {
-                        ufo.frame = 0;
-                    }
-                }
-                
-                OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
-                OAM_MEM[ufo.obj_index].attr0 |= ( fixToInt(ufo.pos_y) & 0x00ff );
-                OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
-                OAM_MEM[ufo.obj_index].attr1 |= ( fixToInt(ufo.pos_x )& 0x01ff );
-                OAM_MEM[ufo.obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( ufo.frame*ufo.tile_step +  ufoOffset/32) | OBJ_PRIORITY(0);
-        //    } else {
-        //        //SPR_setPosition( ufo.sprite, -32, 230 );
-        //        OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
-        //        OAM_MEM[ufo.obj_index].attr0 |=  166 ;
-        //        OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
-        //        OAM_MEM[ufo.obj_index].attr1 |=  0 ;
-        //    }
+
+            //SPR_setPosition(rocks[i].sprite,rocks[i].pos_x,rocks[i].pos_y);
+            OAM_MEM[rocks[i].obj_index].attr0 &= 0xff00;
+            OAM_MEM[rocks[i].obj_index].attr0 |= ( ry & 0x00ff );
+            OAM_MEM[rocks[i].obj_index].attr1 &= 0xfe00;
+            OAM_MEM[rocks[i].obj_index].attr1 |= ( rx & 0x01ff );
+            OAM_MEM[rocks[i].obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( rocks[i].frame*16 +  rockOffset/32) | OBJ_PRIORITY(0);
+        } else {
+            OAM_MEM[rocks[i].obj_index].attr0 &= 0xff00;
+            OAM_MEM[rocks[i].obj_index].attr0 |=  166 ;
+            OAM_MEM[rocks[i].obj_index].attr1 &= 0xfe00;
+            OAM_MEM[rocks[i].obj_index].attr1 |=  0 ;
+        }
+    }
+
+    //    // update ufos
+    //    if( ufo.active == true ) {
+    if( tick % ufo.frame_delay == 0 ) {                
+        ufo.frame++;
+        if( ufo.frame >= ufo.frame_count ) {
+            ufo.frame = 0;
+        }
+    }
+
+    OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
+    OAM_MEM[ufo.obj_index].attr0 |= ( fixToInt(ufo.pos_y) & 0x00ff );
+    OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
+    OAM_MEM[ufo.obj_index].attr1 |= ( fixToInt(ufo.pos_x )& 0x01ff );
+    OAM_MEM[ufo.obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( ufo.frame*ufo.tile_step +  ufoOffset/32) | OBJ_PRIORITY(0);
+    //    } else {
+    //        //SPR_setPosition( ufo.sprite, -32, 230 );
+    //        OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
+    //        OAM_MEM[ufo.obj_index].attr0 |=  166 ;
+    //        OAM_MEM[ufo.obj_index].attr1 &= 0xfe00;
+    //        OAM_MEM[ufo.obj_index].attr1 |=  0 ;
+    //    }
 
 }
 
