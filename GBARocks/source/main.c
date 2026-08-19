@@ -32,10 +32,10 @@ struct CP_SPRITE {
     myfix  vel_x;
     myfix  vel_y;
 
-    int hitbox_x1;
-    int hitbox_y1;
-    int hitbox_x2;
-    int hitbox_y2;
+    myfix hitbox_x1;
+    myfix hitbox_y1;
+    myfix hitbox_x2;
+    myfix hitbox_y2;
 
     bool active;
     int tile_index;
@@ -158,10 +158,10 @@ int createShipShots(int start_ind) {
         shipShots[i].vel_x = MYFIX(0);
         shipShots[i].vel_y = MYFIX(0);
         shipShots[i].active = false;
-        shipShots[i].hitbox_x1 = 2;
-        shipShots[i].hitbox_y1 = 2;
-        shipShots[i].hitbox_x2 = 6;
-        shipShots[i].hitbox_y2 = 6;
+        shipShots[i].hitbox_x1 = MYFIX(2);
+        shipShots[i].hitbox_y1 = MYFIX(2);
+        shipShots[i].hitbox_x2 = MYFIX(6);
+        shipShots[i].hitbox_y2 = MYFIX(6);
         shipShots[i].ticks = 0;
 
         shipShots[i].obj_index = curr_ind;
@@ -296,10 +296,10 @@ int createUFO(int start_ind) {
     ufo.vel_x = MYFIX(0);
     ufo.vel_y = MYFIX(0);
     ufo.active = true;
-    ufo.hitbox_x1 = 0;
-    ufo.hitbox_y1 = 0;
-    ufo.hitbox_x2 = 16;
-    ufo.hitbox_y2 = 16;
+    ufo.hitbox_x1 = MYFIX(0);
+    ufo.hitbox_y1 = MYFIX(0);
+    ufo.hitbox_x2 = MYFIX(16);
+    ufo.hitbox_y2 = MYFIX(16);
     ufo.tile_step = 4;
     ufo.frame_count = 8;
     ufo.frame = random()%8;
@@ -322,10 +322,10 @@ int createUFOShot(int start_ind) {
     ufoShot.vel_x = MYFIX(0);
     ufoShot.vel_y = MYFIX(0);
     ufoShot.active = false;
-    ufoShot.hitbox_x1 = 2;
-    ufoShot.hitbox_y1 = 2;
-    ufoShot.hitbox_x2 = 6;
-    ufoShot.hitbox_y2 = 6;
+    ufoShot.hitbox_x1 = MYFIX(2);
+    ufoShot.hitbox_y1 = MYFIX(2);
+    ufoShot.hitbox_x2 = MYFIX(6);
+    ufoShot.hitbox_y2 = MYFIX(6);
     ufoShot.tile_step = 1;
     ufoShot.frame_count = 4;
     ufoShot.frame = 0;
