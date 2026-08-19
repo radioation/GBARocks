@@ -88,10 +88,8 @@ const int32_t smallRockOffset = 128 + 2048 + 1024 + 4608 + 4096 + 1024;
 
 /////////////////////////////////////////////////////////////////////////////////
 // Define enemy constants
-#define MAX_OBJECTS         45
-// leave 7 of the objs for UFOs and player shots  ( 4 player shots, 1 UFOS, and 2 ufo shots )
-#define MAX_ROCKS           38
-#define MAX_EXPLOSIONS      5
+#define MAX_ROCKS           40
+#define MAX_EXPLOSIONS      8
 
 
 //#define UFO_SPAWN_TIME  0x02f8
@@ -104,6 +102,7 @@ struct CP_SPRITE shipShots[MAX_PLAYER_SHOTS];
 struct CP_SPRITE rocks[MAX_ROCKS];
 struct CP_SPRITE ufo;     // single ufo at a time.
 struct CP_SPRITE ufoShot; // single shot
+struct CP_SPRITE explosions[MAX_EXPLOSIONS];
 
 
 
@@ -316,6 +315,33 @@ int createUFO(int start_ind) {
     return curr_ind;
 }
 
+int createUFOShot(int start_ind) {
+    int curr_ind = start_ind;
+    ufoShot.pos_x = MYFIX(0);
+    ufoShot.pos_y = MYFIX(0);
+    ufoShot.vel_x = MYFIX(0);
+    ufoShot.vel_y = MYFIX(0);
+    ufoShot.active = false;
+    ufoShot.hitbox_x1 = 2;
+    ufoShot.hitbox_y1 = 2;
+    ufoShot.hitbox_x2 = 6;
+    ufoShot.hitbox_y2 = 6;
+    ufoShot.tile_step = 1;
+    ufoShot.frame_count = 4;
+    ufoShot.frame = 0;
+    ufoShot.frame_delay = 2;
+
+    ufoShot.obj_index = curr_ind;
+
+    OAM_MEM[ufoShot.obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(ufoShot.pos_y);	
+    OAM_MEM[ufoShot.obj_index].attr1 = ATTR1_SIZE_8  | OBJ_X(ufoShot.pos_x);
+    OAM_MEM[ufoShot.obj_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(shotOffset/32) | OBJ_PRIORITY(0);
+
+    curr_ind++;
+    return curr_ind;
+}
+
+
 void update() {
     //if( game_mode == play_mode ) 
     if( true ) {
@@ -374,15 +400,17 @@ void update() {
         if( shipShots[i].active == true ) {
             shipShots[i].pos_x +=  shipShots[i].vel_x;
             shipShots[i].pos_y +=  shipShots[i].vel_y;
+            int rx = fixToInt( shipShots[i].pos_x ) - camPosX;
+            int ry = fixToInt( shipShots[i].pos_y ) - camPosY;
             shipShots[i].ticks++;
             if(shipShots[i].ticks > PLAYER_SHOT_TIME ){
                 shipShots[i].active = false;
             }
             //SPR_setPosition(shipShots[i].sprite,shipShots[i].pos_x,shipShots[i].pos_y);
             OAM_MEM[shipShots[i].obj_index].attr0 &= 0xff00;
-            OAM_MEM[shipShots[i].obj_index].attr0 |= ( fixToInt(shipShots[i].pos_y) & 0x00ff );
+            OAM_MEM[shipShots[i].obj_index].attr0 |= ry & 0x00ff;
             OAM_MEM[shipShots[i].obj_index].attr1 &= 0xfe00;
-            OAM_MEM[shipShots[i].obj_index].attr1 |= ( fixToInt(shipShots[i].pos_x) & 0x01ff );
+            OAM_MEM[shipShots[i].obj_index].attr1 |= rx & 0x01ff;
         } else {
             OAM_MEM[shipShots[i].obj_index].attr0 &= 0xff00;
             OAM_MEM[shipShots[i].obj_index].attr0 |=  166 ;
@@ -547,6 +575,7 @@ static void updateCameraPos() {
 
 void createRock(u8 i, u16 rockType, myfix x, myfix y ) {
 }
+
 int createRocks(int start_ind) {
     int curr_ind = start_ind;
     for( int i=0; i < MAX_ROCKS; ++i ) {
@@ -579,61 +608,36 @@ int createRocks(int start_ind) {
     }
     return curr_ind;
 
-    /*
-       obj_pos_x[i] = x;
-       obj_pos_y[i] = y;
-       u8 rot = random();
-       obj_live[i] = true;
-       myfix vel = rockVelocity;
-       if( rockType == ROCK ) {
-       obj_hit_w[i] = MYFIX(30);
-       obj_sprites[i] = SPR_addSprite(&rock, -32, -32, TILE_ATTR(PAL3, 0, FALSE, FALSE));
-       } else if ( rockType == MID_ROCK ) {
-       vel = rockVelocity + MYFIX(2);
-       obj_sprites[i] = SPR_addSprite(&mid_rock, -32, -32, TILE_ATTR(PAL3, 0, FALSE, FALSE));
-       obj_hit_w[i] = MYFIX(22);
-       } else if ( rockType == SMALL_ROCK ) {
-       vel = rockVelocity + MYFIX(4);
-       obj_sprites[i] = SPR_addSprite(&small_rock, -32, -32, TILE_ATTR(PAL3, 0, FALSE, FALSE));
-       obj_hit_w[i] = MYFIX(14);
-       }
-       obj_speed_x[i] = F16_mul( vel, thrustX[rot] );
-       obj_speed_y[i] = F16_mul( vel, thrustY[rot] );
-       SPR_setAnim(obj_sprites[i], i % 4);
-       obj_type[i] = rockType;
-     */
 }
 
-/*
-   void createRocks(u8 numRocks )
-   {
-   for (u8 i = 0; i < MAX_ROCKS; ++i)
-   {
-   if( i < numRocks ) {
-   myfix x = MYFIX(PLAYFIELD_WIDTH/2);
-   myfix y = MYFIX(PLAYFIELD_HEIGHT/2);
-   if( random() %2 == 0 ) {
-// x edges
-y = MYFIX(random() % (PLAYFIELD_HEIGHT));
-} else {
-x = MYFIX(random() % (PLAYFIELD_WITDH));
-}
-createRock( i, ROCK, x, y );
-} else {
-// clear out the rest  of the rocks
-obj_pos_x[i] = MYFIX(-32);
-obj_pos_y[i] = MYFIX(-32);
+int createExplosions(int start_ind) {
+    int curr_ind = start_ind;
+    for( int i=0; i < MAX_EXPLOSIONS; ++i ) {
+        explosions[i].pos_x = MYFIX(-32);
+        explosions[i].pos_y = MYFIX(-32);
 
-obj_speed_x[i] = MYFIX(0);
-obj_speed_y[i] = MYFIX(0);
-obj_live[i] = FALSE;
-obj_hit_w[i] = MYFIX(0);
-obj_sprites[i] = NULL;
-obj_type[i] = NO_TYPE;
+        explosions[i].vel_x = MYFIX(0); 
+        explosions[i].vel_y = MYFIX(0);
+        explosions[i].active = false;
+        explosions[i].hitbox_x1 = MYFIX(0); // not used.
+        explosions[i].hitbox_y1 = MYFIX(0);
+        explosions[i].hitbox_x2 = MYFIX(0);
+        explosions[i].hitbox_y2 = MYFIX(0);
+        explosions[i].tile_index = boomOffset;
+        explosions[i].tile_step = 16;
+        explosions[i].frame_count = 8;
+        explosions[i].frame = 0;
+        explosions[i].frame_delay = 2;
+
+        explosions[i].obj_index = curr_ind;
+        OAM_MEM[explosions[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(fixToInt(explosions[i].pos_y));
+        OAM_MEM[explosions[i].obj_index].attr1 = ATTR1_SIZE_32  | OBJ_X(fixToInt(explosions[i].pos_x));
+        OAM_MEM[explosions[i].obj_index].attr2 = ATTR2_PALETTE(3) | OBJ_CHAR( explosions[i].frame*16 +  boomOffset/32) | OBJ_PRIORITY(0);
+        curr_ind++;
+    }
+    return curr_ind;
+
 }
-}
-}
- */
 
 
 //---------------------------------------------------------------------------------
@@ -701,7 +705,8 @@ int main(void) {
     int lastIndex = createShipShots(1);
     lastIndex = createUFO(lastIndex);	
     lastIndex = createRocks(lastIndex);	
-    //lastIndex = createUFOShot(lastIndex);	
+    lastIndex = createUFOShot(lastIndex);	
+    lastIndex = createExplosions(lastIndex);	
 
     //iprintf("\x1b[1;1H");
     //iprintf("tX: %d iTX: %d   \n", thrustX[0], fixToInt(thrustX[0]) );
