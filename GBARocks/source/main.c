@@ -22,9 +22,42 @@
 #define OAM_MEM ((volatile OBJATTR *)0x07000000)
 
 
+/////////////////////////////////////////////////////////////////////////////////
+// Define player numbers
+#define PLAYER_WIDTH        16
+#define PLAYER_HEIGHT       16
+#define PLAYER_SHOT_WIDTH   4
+#define PLAYER_SHOT_HEIGHT  4
+#define SHOT_OFFSET_X       2
+#define SHOT_OFFSET_Y       2
+#define MAX_PLAYER_SHOTS    4
+#define PLAYER_SHOT_TIME    80
 
 
-// the play 
+/////////////////////////////////////////////////////////////////////////////////
+// Define enemy numbers
+#define MAX_ROCKS           10
+#define MAX_EXPLOSIONS      8
+
+
+//#define UFO_SPAWN_TIME  0x02f8
+#define UFO_SPAWN_TIME  300
+#define UFO_SHOT_TICKS  60
+
+
+/////////////////////////////////////////////////////////////////////////////////
+// Define map/world constants
+#define PLAYFIELD_WIDTH           480
+#define PLAYFIELD_HEIGHT          480
+
+
+#define SCR_WIDTH           240
+#define SCR_HEIGHT          160
+
+#define CAMERA_PADDING        40
+
+/////////////////////////////////////////////////////////////////////////////////
+// Sprites
 struct CP_SPRITE {
     myfix  obj_index;
     myfix  pos_x;
@@ -44,6 +77,7 @@ struct CP_SPRITE {
     int frame;
     int frame_delay;
     int ticks;
+    int attr_size;
 };
 
 enum SHIP_STATE {
@@ -57,10 +91,11 @@ myfix shipAccelY = MYFIX(0.0);
 //myfix ship_warp_pos_x = MYFIX(0.0);
 //myfix ship_warp_pos_y = MYFIX(0.0);
 u8 ship_state = ship_dead;
+u8 shipDir = 0;
+
 static int score = 0;
 static int lives = 3;
 static int ship_ticks = 0;
-u8 shipDir = 0;
 const u8 angleStep = 2;
 
 const int32_t shotOffset = 0;
@@ -72,31 +107,6 @@ const int32_t midRockOffset = 128 + 2048 + 1024 + 4608 + 4096;
 const int32_t smallRockOffset = 128 + 2048 + 1024 + 4608 + 4096 + 1024;
 
 
-/////////////////////////////////////////////////////////////////////////////////
-// Define player constants
-#define PLAYER_WIDTH        16
-#define PLAYER_HEIGHT       16
-#define PLAYER_SHOT_WIDTH   4
-#define PLAYER_SHOT_HEIGHT  4
-#define SHOT_OFFSET_X       2
-#define SHOT_OFFSET_Y       2
-#define MAX_PLAYER_SHOTS    4
-#define PLAYER_SHOT_TIME    80
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////
-// Define enemy constants
-#define MAX_ROCKS           10
-#define MAX_EXPLOSIONS      8
-
-
-//#define UFO_SPAWN_TIME  0x02f8
-#define UFO_SPAWN_TIME  300
-#define UFO_SHOT_TICKS  60
-
-
 struct CP_SPRITE shipSprite; // only one player
 struct CP_SPRITE shipShots[MAX_PLAYER_SHOTS];
 struct CP_SPRITE rocks[MAX_ROCKS];
@@ -105,17 +115,11 @@ struct CP_SPRITE ufoShot; // single shot
 struct CP_SPRITE explosions[MAX_EXPLOSIONS];
 
 
-
-/////////////////////////////////////////////////////////////////////////////////
-// Define map/world constants
-#define PLAYFIELD_WIDTH           480
-#define PLAYFIELD_HEIGHT          480
-
-
-#define SCR_WIDTH           240
-#define SCR_HEIGHT          160
-
-#define CAMERA_PADDING        40
+enum ROCK_TYPE {
+    ROCK = 0,
+    MID_ROCK = 1,
+    SMALL_ROCK = 2,
+};
 
 int camPosX; // relative to total world map
 int camPosY; // relative to total world map
@@ -135,7 +139,8 @@ enum GAME_MODE {
 u8 game_mode = attract_mode;
 
 
-
+/////////////////////////////////////////////////////////////////////////////////
+// 
 
 
 void spawnShip() {
@@ -342,6 +347,259 @@ int createUFOShot(int start_ind) {
 }
 
 
+
+
+int currentExplosion = 0;
+
+static void showExplosion(myfix pos_x, myfix pos_y)
+{
+    if (explosions[currentExplosion].active == false)
+    {
+        // use it
+        explosions[currentExplosion].active = true;
+        explosions[currentExplosion].ticks = 0;
+        explosions[currentExplosion].frame = 0;
+        explosions[currentExplosion].pos_x = pos_x;
+        explosions[currentExplosion].pos_y = pos_y;
+
+        //SPR_setVisibility(explosion_sprites[currentExplosion], VISIBLE);
+        //SPR_setPosition(explosion_sprites[currentExplosion], x, y );
+
+        //XGM_startPlayPCM(SND_EXPLOSION, 10, SOUND_PCM_CH3);
+
+        // point to next explosion
+        ++currentExplosion;
+        if (currentExplosion >= MAX_EXPLOSIONS)
+        {
+            currentExplosion = 0;
+        }
+    }
+}
+
+
+
+static void updateCameraPos() {
+    int px = fixToInt( shipSprite.pos_x);
+    int py = fixToInt( shipSprite.pos_y);
+    // figure out where the ship is.
+    int playerScreenX = px - camPosX;
+    int playerScreenY = py - camPosY;
+
+    // Adjust new camera X position based on ship position
+    int newCamX;
+    // check if the ship X position is too close to the right edge of the screen
+    if( playerScreenX > SCR_WIDTH - CAMERA_PADDING - PLAYER_WIDTH ) {
+        newCamX = px - ( SCR_WIDTH - CAMERA_PADDING - PLAYER_WIDTH );
+    } else if( playerScreenX < CAMERA_PADDING ) { // check if the ship is too close to the left
+        newCamX = px - CAMERA_PADDING;
+    } else {
+        newCamX = camPosX; // no change to camera position.
+    }
+
+    // Adjust camera Y position based on ship position
+    int newCamY;
+    // check if the ship Y position is too close to the bottom edge of the screen
+    if( playerScreenY > SCR_HEIGHT - CAMERA_PADDING - PLAYER_HEIGHT ) {
+        newCamY = py - ( SCR_HEIGHT - CAMERA_PADDING - PLAYER_HEIGHT ) ;
+    } else if( playerScreenY < CAMERA_PADDING ) {  // is ship too close to the top of the screen?
+        newCamY = py - CAMERA_PADDING;
+    } else {
+        newCamY = camPosY; // no change to camera position.
+    }
+
+
+    // handle camera position at edges
+    if ( newCamX < 0  ) { // don't move past the left edge of the scroll image.
+        newCamX = 0;
+    } else if ( newCamX > (PLAYFIELD_WIDTH - SCR_WIDTH )) {  // don't move past the right edge
+        newCamX = PLAYFIELD_WIDTH - SCR_WIDTH ;
+    }
+    if ( newCamY < 0  ) { // don't move past the top of the scroll image
+        newCamY = 0;
+    } else if ( newCamY > (PLAYFIELD_HEIGHT - SCR_HEIGHT )) {  // don't move past the bottom
+        newCamY = PLAYFIELD_HEIGHT - SCR_HEIGHT ;
+    }
+
+    // Store the values
+    camPosX = newCamX;
+    camPosY = newCamY;
+    // Update the MAP position
+    //MAP_scrollTo( map_a, camPosX, camPosY );
+    REG_BG1HOFS = camPosX;
+    REG_BG1VOFS = camPosY;
+}
+
+
+
+
+void createRock(int i, int object_index, int rockType, myfix x, myfix y ) {
+    rocks[i].pos_x = x;
+    rocks[i].pos_y = y;
+
+    // use ranodm direction for rock motion
+    int rot = random() % 256; 
+    myfix vel = MYFIX(0.8);
+    rocks[i].vel_x = fix_mul( vel, thrustX[rot]  );
+    rocks[i].vel_y = fix_mul( vel, thrustY[rot]  );
+    rocks[i].active = true;
+    rocks[i].hitbox_x1 = MYFIX(2);
+    rocks[i].hitbox_y1 = MYFIX(2);
+    rocks[i].hitbox_x2 = MYFIX(30);
+    rocks[i].hitbox_y2 = MYFIX(30);
+    if( rockType == ROCK ) {
+        rocks[i].tile_index = rockOffset;
+        rocks[i].tile_step = 16;
+        rocks[i].frame_count = 8;
+        rocks[i].frame = random()%8;
+        rocks[i].attr_size = ATTR1_SIZE_32;
+    } if( rockType == MID_ROCK ) {
+        rocks[i].tile_index = midRockOffset;
+        rocks[i].tile_step = 4; 
+        rocks[i].frame_count = 8;
+        rocks[i].frame = random()%8;
+        rocks[i].attr_size = ATTR1_SIZE_16;
+    } if( rockType == SMALL_ROCK ) {
+        rocks[i].tile_index = smallRockOffset;
+        rocks[i].tile_step = 1; 
+        rocks[i].frame_count = 4;
+        rocks[i].frame = random()%4;
+        rocks[i].attr_size = ATTR1_SIZE_8;
+    }
+    rocks[i].frame_delay = 10;
+
+    //rocks[i].sprite = SPR_addSprite( &rock, -32, -32, TILE_ATTR( PAL3, 0, FALSE, FALSE ));
+    rocks[i].obj_index = object_index;
+    OAM_MEM[rocks[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(fixToInt(rocks[i].pos_y));
+    OAM_MEM[rocks[i].obj_index].attr1 = rocks[i].attr_size  | OBJ_X(fixToInt(rocks[i].pos_x));
+    OAM_MEM[rocks[i].obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( rocks[i].frame* rocks[i].tile_step +  rocks[i].tile_index/32) | OBJ_PRIORITY(0);
+}
+
+int createRocks(int start_ind) {
+    int curr_ind = start_ind;
+    for( int i=0; i < MAX_ROCKS; ++i ) {
+        //	SPR_setAnim( rocks[i].sprite, 0 );
+        myfix x = MYFIX(random()%(PLAYFIELD_WIDTH-32));  // random starting position for rock sprites
+        myfix y = MYFIX(random()%(PLAYFIELD_HEIGHT-32));
+        createRock( i, curr_ind, ROCK, x, y );
+        curr_ind++;
+    }
+    return curr_ind;
+
+}
+
+
+void splitRock( int whichRock ) {
+    int count = 0;
+    myfix x = rocks[whichRock].pos_x;
+    myfix y = rocks[whichRock].pos_y;
+    int newType = MID_ROCK;
+    if( rocks[whichRock].tile_index == midRockOffset ) {
+        newType = SMALL_ROCK;
+    }
+    // u
+    for (int i = 0; i < MAX_ROCKS; ++i)
+    {
+        if( rocks[i].active == false ) {
+            createRock( i, rocks[i].obj_index, newType, x, y );
+            count++;
+            if ( count == 2 ) {
+                return;
+            }
+        }
+    } 
+}
+
+int createExplosions(int start_ind) {
+    int curr_ind = start_ind;
+    for( int i=0; i < MAX_EXPLOSIONS; ++i ) {
+        explosions[i].pos_x = MYFIX(-32);
+        explosions[i].pos_y = MYFIX(-32);
+
+        explosions[i].vel_x = MYFIX(0); 
+        explosions[i].vel_y = MYFIX(0);
+        explosions[i].active = false;
+        explosions[i].hitbox_x1 = MYFIX(0); // not used.
+        explosions[i].hitbox_y1 = MYFIX(0);
+        explosions[i].hitbox_x2 = MYFIX(0);
+        explosions[i].hitbox_y2 = MYFIX(0);
+        explosions[i].tile_index = boomOffset;
+        explosions[i].tile_step = 16;
+        explosions[i].frame_count = 8;
+        explosions[i].frame = 0;
+        explosions[i].frame_delay = 2;
+
+        explosions[i].obj_index = curr_ind;
+        OAM_MEM[explosions[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(fixToInt(explosions[i].pos_y));
+        OAM_MEM[explosions[i].obj_index].attr1 = ATTR1_SIZE_32  | OBJ_X(fixToInt(explosions[i].pos_x));
+        OAM_MEM[explosions[i].obj_index].attr2 = ATTR2_PALETTE(3) | OBJ_CHAR( explosions[i].frame*16 +  boomOffset/32) | OBJ_PRIORITY(0);
+        curr_ind++;
+    }
+    return curr_ind;
+
+}
+
+
+
+void checkCollisions() {
+
+    // check shots
+    for( int i=0; i < MAX_PLAYER_SHOTS; ++i ) {
+        if( shipShots[i].active == true ) {
+            // check if UFO hit.
+            if(     ufo.active &&
+                    (ufo.pos_x + ufo.hitbox_x1) < (shipShots[i].pos_x + shipShots[i].hitbox_x2) &&
+                    (ufo.pos_x + ufo.hitbox_x2) > (shipShots[i].pos_x + shipShots[i].hitbox_x1) &&
+                    (ufo.pos_y + ufo.hitbox_y1) < (shipShots[i].pos_y + shipShots[i].hitbox_y2) &&
+                    (ufo.pos_y + ufo.hitbox_y2) > (shipShots[i].pos_y + shipShots[i].hitbox_y1)  ) 
+            {
+                ufo.active = false;
+                shipShots[i].active = false;
+                showExplosion( ufo.pos_x-MYFIX(8), ufo.pos_y-MYFIX(8) );
+            } 
+            else 
+            {   
+                // check if rock hit
+                for( int j=0; j < MAX_ROCKS; ++j ) {
+                    if(     rocks[j].active &&
+                            (rocks[j].pos_x + rocks[j].hitbox_x1) < (shipShots[i].pos_x + shipShots[i].hitbox_x2) &&
+                            (rocks[j].pos_x + rocks[j].hitbox_x2) > (shipShots[i].pos_x + shipShots[i].hitbox_x1) &&
+                            (rocks[j].pos_y + rocks[j].hitbox_y1) < (shipShots[i].pos_y + shipShots[i].hitbox_y2) &&
+                            (rocks[j].pos_y + rocks[j].hitbox_y2) > (shipShots[i].pos_y + shipShots[i].hitbox_y1)  ) 
+                    {
+                        rocks[j].active = false;
+                        shipShots[i].active = false;
+                        showExplosion( rocks[j].pos_x, rocks[j].pos_y );
+                        if( rocks[j].tile_index != smallRockOffset ) {
+                            splitRock( j );
+                        }
+                        break;  // only do one
+                    } 
+                }
+            }
+
+
+        }
+    }
+
+    // check ship
+/*
+    // check if rock hit
+    for( int j=0; j < MAX_ROCKS; ++j ) {
+        if(     rocks[j].active &&
+                (rocks[j].pos_x + rocks[j].hitbox_x1) < (shipShots[i].pos_x + shipShots[i].hitbox_x2) &&
+                (rocks[j].pos_x + rocks[j].hitbox_x2) > (shipShots[i].pos_x + shipShots[i].hitbox_x1) &&
+                (rocks[j].pos_y + rocks[j].hitbox_y1) < (shipShots[i].pos_y + shipShots[i].hitbox_y2) &&
+                (rocks[j].pos_y + rocks[j].hitbox_y2) > (shipShots[i].pos_y + shipShots[i].hitbox_y1)  ) 
+        {
+            rocks[j].active = false;
+            shipShots[i].active = false;
+            showExplosion( rocks[j].pos_x, rocks[j].pos_y );
+            break;  // only do one
+        } 
+    }
+*/
+}
+
 void update() {
     //if( game_mode == play_mode ) 
     if( true ) {
@@ -464,7 +722,7 @@ void update() {
             }
             OAM_MEM[rocks[i].obj_index].attr1 &= 0xfe00;
             OAM_MEM[rocks[i].obj_index].attr1 |= ( x & 0x01ff );
-            OAM_MEM[rocks[i].obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( rocks[i].frame*16 +  rockOffset/32) | OBJ_PRIORITY(0);
+            OAM_MEM[rocks[i].obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( rocks[i].frame* rocks[i].tile_step +  rocks[i].tile_index/32) | OBJ_PRIORITY(0);
         } else {
             OAM_MEM[rocks[i].obj_index].attr0 &= 0xff00;
             OAM_MEM[rocks[i].obj_index].attr0 |=  166 ;
@@ -523,202 +781,6 @@ void update() {
     }
 
 }
-
-
-int currentExplosion = 0;
-
-static void showExplosion(myfix pos_x, myfix pos_y)
-{
-    if (explosions[currentExplosion].active == false)
-    {
-        // use it
-        explosions[currentExplosion].active = true;
-        explosions[currentExplosion].ticks = 0;
-        explosions[currentExplosion].frame = 0;
-        explosions[currentExplosion].pos_x = pos_x;
-        explosions[currentExplosion].pos_y = pos_y;
-
-        //SPR_setVisibility(explosion_sprites[currentExplosion], VISIBLE);
-        //SPR_setPosition(explosion_sprites[currentExplosion], x, y );
-
-        //XGM_startPlayPCM(SND_EXPLOSION, 10, SOUND_PCM_CH3);
-
-        // point to next explosion
-        ++currentExplosion;
-        if (currentExplosion >= MAX_EXPLOSIONS)
-        {
-            currentExplosion = 0;
-        }
-    }
-}
-
-void checkCollisions() {
-
-    // check  
-    for( int i=0; i < MAX_PLAYER_SHOTS; ++i ) {
-        if( shipShots[i].active == true ) {
-            // check if UFO hit.
-            if(     ufo.active &&
-                    (ufo.pos_x + ufo.hitbox_x1) < (shipShots[i].pos_x + shipShots[i].hitbox_x2) &&
-                    (ufo.pos_x + ufo.hitbox_x2) > (shipShots[i].pos_x + shipShots[i].hitbox_x1) &&
-                    (ufo.pos_y + ufo.hitbox_y1) < (shipShots[i].pos_y + shipShots[i].hitbox_y2) &&
-                    (ufo.pos_y + ufo.hitbox_y2) > (shipShots[i].pos_y + shipShots[i].hitbox_y1)  ) 
-            {
-                ufo.active = false;
-                shipShots[i].active = false;
-                showExplosion( ufo.pos_x-MYFIX(8), ufo.pos_y-MYFIX(8) );
-            } 
-            else 
-            {   
-                // check if rock hit
-                for( int j=0; j < MAX_ROCKS; ++j ) {
-                    if(     rocks[j].active &&
-                            (rocks[j].pos_x + rocks[j].hitbox_x1) < (shipShots[i].pos_x + shipShots[i].hitbox_x2) &&
-                            (rocks[j].pos_x + rocks[j].hitbox_x2) > (shipShots[i].pos_x + shipShots[i].hitbox_x1) &&
-                            (rocks[j].pos_y + rocks[j].hitbox_y1) < (shipShots[i].pos_y + shipShots[i].hitbox_y2) &&
-                            (rocks[j].pos_y + rocks[j].hitbox_y2) > (shipShots[i].pos_y + shipShots[i].hitbox_y1)  ) 
-                    {
-                        rocks[j].active = false;
-                        shipShots[i].active = false;
-                        showExplosion( rocks[j].pos_x, rocks[j].pos_y );
-                        break;  // only do one
-                    } 
-                }
-            }
-
-
-        }
-    }
-
-    // check ship
-
-
-}
-
-
-static void updateCameraPos() {
-    int px = fixToInt( shipSprite.pos_x);
-    int py = fixToInt( shipSprite.pos_y);
-    // figure out where the ship is.
-    int playerScreenX = px - camPosX;
-    int playerScreenY = py - camPosY;
-
-    // Adjust new camera X position based on ship position
-    int newCamX;
-    // check if the ship X position is too close to the right edge of the screen
-    if( playerScreenX > SCR_WIDTH - CAMERA_PADDING - PLAYER_WIDTH ) {
-        newCamX = px - ( SCR_WIDTH - CAMERA_PADDING - PLAYER_WIDTH );
-    } else if( playerScreenX < CAMERA_PADDING ) { // check if the ship is too close to the left
-        newCamX = px - CAMERA_PADDING;
-    } else {
-        newCamX = camPosX; // no change to camera position.
-    }
-
-    // Adjust camera Y position based on ship position
-    int newCamY;
-    // check if the ship Y position is too close to the bottom edge of the screen
-    if( playerScreenY > SCR_HEIGHT - CAMERA_PADDING - PLAYER_HEIGHT ) {
-        newCamY = py - ( SCR_HEIGHT - CAMERA_PADDING - PLAYER_HEIGHT ) ;
-    } else if( playerScreenY < CAMERA_PADDING ) {  // is ship too close to the top of the screen?
-        newCamY = py - CAMERA_PADDING;
-    } else {
-        newCamY = camPosY; // no change to camera position.
-    }
-
-
-    // handle camera position at edges
-    if ( newCamX < 0  ) { // don't move past the left edge of the scroll image.
-        newCamX = 0;
-    } else if ( newCamX > (PLAYFIELD_WIDTH - SCR_WIDTH )) {  // don't move past the right edge
-        newCamX = PLAYFIELD_WIDTH - SCR_WIDTH ;
-    }
-    if ( newCamY < 0  ) { // don't move past the top of the scroll image
-        newCamY = 0;
-    } else if ( newCamY > (PLAYFIELD_HEIGHT - SCR_HEIGHT )) {  // don't move past the bottom
-        newCamY = PLAYFIELD_HEIGHT - SCR_HEIGHT ;
-    }
-
-    // Store the values
-    camPosX = newCamX;
-    camPosY = newCamY;
-    // Update the MAP position
-    //MAP_scrollTo( map_a, camPosX, camPosY );
-    REG_BG1HOFS = camPosX;
-    REG_BG1VOFS = camPosY;
-}
-
-
-
-
-void createRock(u8 i, int rockType, myfix x, myfix y ) {
-}
-
-int createRocks(int start_ind) {
-    int curr_ind = start_ind;
-    for( int i=0; i < MAX_ROCKS; ++i ) {
-        rocks[i].pos_x = MYFIX(random()%(PLAYFIELD_WIDTH-32));  // random starting position for rock sprites
-        rocks[i].pos_y = MYFIX(random()%(PLAYFIELD_HEIGHT-32));
-
-        // use ranodm direction for rock motion
-        int rot = random() % 256; 
-        myfix vel = MYFIX(0.8);
-        rocks[i].vel_x = fix_mul( vel, thrustX[rot]  );
-        rocks[i].vel_y = fix_mul( vel, thrustY[rot]  );
-        rocks[i].active = true;
-        rocks[i].hitbox_x1 = MYFIX(2);
-        rocks[i].hitbox_y1 = MYFIX(2);
-        rocks[i].hitbox_x2 = MYFIX(30);
-        rocks[i].hitbox_y2 = MYFIX(30);
-        rocks[i].tile_index = rockOffset;
-        rocks[i].tile_step = 16;
-        rocks[i].frame_count = 8;
-        rocks[i].frame = random()%8;
-        rocks[i].frame_delay = 10;
-
-        //rocks[i].sprite = SPR_addSprite( &rock, -32, -32, TILE_ATTR( PAL3, 0, FALSE, FALSE ));
-        rocks[i].obj_index = curr_ind;
-        OAM_MEM[rocks[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(fixToInt(rocks[i].pos_y));
-        OAM_MEM[rocks[i].obj_index].attr1 = ATTR1_SIZE_32  | OBJ_X(fixToInt(rocks[i].pos_x));
-        OAM_MEM[rocks[i].obj_index].attr2 = ATTR2_PALETTE(2) | OBJ_CHAR( rocks[i].frame*16 +  rockOffset/32) | OBJ_PRIORITY(0);
-        //	SPR_setAnim( rocks[i].sprite, 0 );
-        curr_ind++;
-    }
-    return curr_ind;
-
-}
-
-int createExplosions(int start_ind) {
-    int curr_ind = start_ind;
-    for( int i=0; i < MAX_EXPLOSIONS; ++i ) {
-        explosions[i].pos_x = MYFIX(-32);
-        explosions[i].pos_y = MYFIX(-32);
-
-        explosions[i].vel_x = MYFIX(0); 
-        explosions[i].vel_y = MYFIX(0);
-        explosions[i].active = false;
-        explosions[i].hitbox_x1 = MYFIX(0); // not used.
-        explosions[i].hitbox_y1 = MYFIX(0);
-        explosions[i].hitbox_x2 = MYFIX(0);
-        explosions[i].hitbox_y2 = MYFIX(0);
-        explosions[i].tile_index = boomOffset;
-        explosions[i].tile_step = 16;
-        explosions[i].frame_count = 8;
-        explosions[i].frame = 0;
-        explosions[i].frame_delay = 2;
-
-        explosions[i].obj_index = curr_ind;
-        OAM_MEM[explosions[i].obj_index].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(fixToInt(explosions[i].pos_y));
-        OAM_MEM[explosions[i].obj_index].attr1 = ATTR1_SIZE_32  | OBJ_X(fixToInt(explosions[i].pos_x));
-        OAM_MEM[explosions[i].obj_index].attr2 = ATTR2_PALETTE(3) | OBJ_CHAR( explosions[i].frame*16 +  boomOffset/32) | OBJ_PRIORITY(0);
-        curr_ind++;
-    }
-    return curr_ind;
-
-}
-
-
-
-
 //---------------------------------------------------------------------------------
 // Program entry point
 //---------------------------------------------------------------------------------
