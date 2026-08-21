@@ -115,6 +115,8 @@ struct CP_SPRITE ufoShot; // single shot
 struct CP_SPRITE explosions[MAX_EXPLOSIONS];
 
 
+int ufoTick = 0;
+
 enum ROCK_TYPE {
     ROCK = 0,
     MID_ROCK = 1,
@@ -296,10 +298,24 @@ void readKeys() {
 
 int createUFO(int start_ind) {
     int curr_ind = start_ind;
-    ufo.pos_x = MYFIX(40);
-    ufo.pos_y = MYFIX(40);
-    ufo.vel_x = MYFIX(0);
+    ufo.pos_x = MYFIX(0);
+    ufo.pos_y = shipSprite.pos_y; //MYFIX(0);
+    ufo.vel_x = MYFIX(0.3);
     ufo.vel_y = MYFIX(0);
+    //if( random() %2 == 0 ) {
+    //    ufo.pos_x = shipSprite.pos_x - MYFIX( 240);
+    //    if( ufo.pos_x < MYFIX(0) ) {
+    //        ufo.pos_x = MYFIX(0);
+    //    }
+    //    ufo.vel_x = MYFIX(0.5);
+    //} else {
+    //    ufo.pos_x = shipSprite.pos_x + MYFIX( 240);
+    //    if( ufo.pos_x > PLAYFIELD_WIDTH) {
+    //        ufo.pos_x = MYFIX(PLAYFIELD_WIDTH);
+    //    }
+    //    ufo.vel_x = MYFIX(-0.5);
+    //}
+
     ufo.active = true;
     ufo.hitbox_x1 = MYFIX(0);
     ufo.hitbox_y1 = MYFIX(0);
@@ -769,6 +785,20 @@ void update() {
                 ufo.frame = 0;
             }
         }
+            ufo.pos_x +=  ufo.vel_x;
+            if( ufo.pos_x < MYFIX(-32) ) {
+                ufo.pos_x = PLAYFIELD_WIDTH;
+            }else if( ufo.pos_x > MYFIX(PLAYFIELD_WIDTH) ) {
+                ufo.pos_x = MYFIX(0);
+            }
+
+
+            ufo.pos_y +=  ufo.vel_y;
+            if( ufo.pos_y < MYFIX(-32) ) {
+                ufo.pos_y = PLAYFIELD_HEIGHT;
+            }else if( ufo.pos_y > MYFIX(PLAYFIELD_HEIGHT) ) {
+                ufo.pos_y = MYFIX(0);
+            }
         x = fixToInt( ufo.pos_x ) - camPosX;
         y = fixToInt( ufo.pos_y ) - camPosY;
         OAM_MEM[ufo.obj_index].attr0 &= 0xff00;
@@ -811,6 +841,48 @@ void update() {
     }
 
 }
+
+
+void fireUfoShot() {
+    // just random. 
+}
+
+void updateUfo()
+{
+    ufoTick++;
+    if( ufo.active == false ) {
+        if( ufoTick >= UFO_SPAWN_TIME ) {
+            // reactive UFO
+            ufo.active = true;
+            ufoTick = 0;
+        }
+        return;
+    } else {
+        // change Y veolcity every once in a while.
+        if ( ufoTick % 60 == 0 ) {
+            u8 rot = random();
+            ufo.vel_y = thrustY[rot] << 2;
+            if(  (ufo.pos_y - shipSprite.pos_y ) < MYFIX(50.0) ) {
+                if( ufo.vel_y < MYFIX(0.0) ) {
+                    ufo.vel_y =  - ufo.vel_y;
+                }
+            } else if(  (ufo.pos_y - shipSprite.pos_y ) > MYFIX(50.0) ) {
+                if( ufo.vel_y > MYFIX(0.0) ) {
+                    ufo.vel_y =  - ufo.vel_y;
+                }
+            }
+        }
+        //// fire only when on scren.
+        //if ( ufoTick % UFO_SHOT_TICKS  == 0 && obj_live[UFO_SLOT] == TRUE && SPR_isVisible( obj_sprites[UFO_SLOT], true )) {
+        //    fireUfoShot();
+        //}
+
+    }
+
+}
+
+
+
 //---------------------------------------------------------------------------------
 // Program entry point
 //---------------------------------------------------------------------------------
@@ -892,6 +964,7 @@ int main(void) {
         //        iprintf("\x1b[1;1H");
         //        iprintf("d: %d a: %d v: %d  \n", shipDir, fixToInt(shipAccelX), fixToInt( shipSprite.vel_x )); 
         readKeys();
+        updateUfo();
         update();
         checkCollisions();
         updateCameraPos();
