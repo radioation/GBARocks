@@ -542,7 +542,7 @@ int createExplosions(int start_ind) {
 
 void checkCollisions() {
 
-    // check shots
+    // CHeck if player shot hit anything
     for( int i=0; i < MAX_PLAYER_SHOTS; ++i ) {
         if( shipShots[i].active == true ) {
             // check if UFO hit.
@@ -581,23 +581,53 @@ void checkCollisions() {
         }
     }
 
-    // check ship
-/*
-    // check if rock hit
+    if( ufo.active ) {
+        // check if rock hit
+        for( int j=0; j < MAX_ROCKS; ++j ) {
+            if(     rocks[j].active &&
+                    (rocks[j].pos_x + rocks[j].hitbox_x1) < (ufo.pos_x + ufo.hitbox_x2) &&
+                    (rocks[j].pos_x + rocks[j].hitbox_x2) > (ufo.pos_x + ufo.hitbox_x1) &&
+                    (rocks[j].pos_y + rocks[j].hitbox_y1) < (ufo.pos_y + ufo.hitbox_y2) &&
+                    (rocks[j].pos_y + rocks[j].hitbox_y2) > (ufo.pos_y + ufo.hitbox_y1)  ) 
+            {
+                rocks[j].active = false;
+                ufo.active = false;
+                showExplosion( rocks[j].pos_x, rocks[j].pos_y );
+                if( rocks[j].tile_index != smallRockOffset ) {
+                    splitRock( j );
+                }
+                break;  // only need one collision.
+            } 
+        }
+        // check if ship hit
+        if(     shipSprite.active &&
+                (shipSprite.pos_x + shipSprite.hitbox_x1) < (ufo.pos_x + ufo.hitbox_x2) &&
+                (shipSprite.pos_x + shipSprite.hitbox_x2) > (ufo.pos_x + ufo.hitbox_x1) &&
+                (shipSprite.pos_y + shipSprite.hitbox_y1) < (ufo.pos_y + ufo.hitbox_y2) &&
+                (shipSprite.pos_y + shipSprite.hitbox_y2) > (ufo.pos_y + ufo.hitbox_y1)  ) 
+        {
+            shipSprite.active = false;
+            ufo.active = false;
+            showExplosion( shipSprite.pos_x, shipSprite.pos_y );
+        } 
+
+    }
+
+
+    // check if rock hit ship
     for( int j=0; j < MAX_ROCKS; ++j ) {
         if(     rocks[j].active &&
-                (rocks[j].pos_x + rocks[j].hitbox_x1) < (shipShots[i].pos_x + shipShots[i].hitbox_x2) &&
-                (rocks[j].pos_x + rocks[j].hitbox_x2) > (shipShots[i].pos_x + shipShots[i].hitbox_x1) &&
-                (rocks[j].pos_y + rocks[j].hitbox_y1) < (shipShots[i].pos_y + shipShots[i].hitbox_y2) &&
-                (rocks[j].pos_y + rocks[j].hitbox_y2) > (shipShots[i].pos_y + shipShots[i].hitbox_y1)  ) 
+                (rocks[j].pos_x + rocks[j].hitbox_x1) < (shipSprite.pos_x + shipSprite.hitbox_x2) &&
+                (rocks[j].pos_x + rocks[j].hitbox_x2) > (shipSprite.pos_x + shipSprite.hitbox_x1) &&
+                (rocks[j].pos_y + rocks[j].hitbox_y1) < (shipSprite.pos_y + shipSprite.hitbox_y2) &&
+                (rocks[j].pos_y + rocks[j].hitbox_y2) > (shipSprite.pos_y + shipSprite.hitbox_y1)  ) 
         {
             rocks[j].active = false;
-            shipShots[i].active = false;
+            shipSprite.active = false;
             showExplosion( rocks[j].pos_x, rocks[j].pos_y );
             break;  // only do one
         } 
     }
-*/
 }
 
 void update() {
