@@ -101,7 +101,6 @@ int main(void) {
     ///////////////////////////////////////////////////////////////
     // THIRD, set the startbit in SIOCNT with mode/clock bits unchanged
 
-    // didn't I laredy do this above?
     REG_SIOCNT |= SIO_START;
 
 
