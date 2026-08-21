@@ -5,9 +5,9 @@ Scrolling is trivially easy. Just set values for the BG of your choice
 REG_BG1HOFS = camera_x;
 REG_BG1VOFS = camera_y;
 ```
-it even handles screen wrap, so no biggie. 
+It even handle screen wrap so a scrolling example is pretty trivial.
 
-To make this a little more useful, adding camera that stop at edges. 
+To make this a little more useful, I'm adding camera that stop at edges. 
 The main things that matters are keeping track of an overall camera position for 
 scrolling the map and a player (ship) position relative to the playfield size. 
 
@@ -16,7 +16,8 @@ scrolling the map and a player (ship) position relative to the playfield size.
 
 # grit
 The python scripts I used to break down images were just made to force myself to 
-really link about the layout of the palette/tiles/maps. Going forward use `grit`
+really link about the layout of the palette/tiles/maps. Going forward use the
+tool made for this: `grit`
 
 ```bash
 grit my_image.png -gB4 -mR4 -mLs -pn16 -ftc
@@ -45,7 +46,7 @@ dmaCopy( my_imageMap, MAP_BASE_ADR(8), my_imageMapLen );
 
 # bigger maps
 I'm going with 480x480 which will still fit into a 512x512 tile map
-
+```txt
 +----------------+----------------+
 | screen block 0 | screen block 1 |
 |    256x256     |    256x256     |
@@ -53,7 +54,7 @@ I'm going with 480x480 which will still fit into a 512x512 tile map
 | screen block 2 | screen block 3 |
 |    256x256     |    256x256     |
 +----------------+----------------+
-
+```
 and uses sizes defined in `gba_video.h`
 
 `REG_BG1CNT = ( BG_SIZE_3 | BG_16_COLOR | TILE_BASE(0) | MAP_BASE(8) );`
