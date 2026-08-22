@@ -18,6 +18,7 @@
 #include "gb_rock.h"
 #include "gb_mid_rock.h"
 #include "gb_small_rock.h"
+#include "title.h"
 
 #define OAM_MEM ((volatile OBJATTR *)0x07000000)
 
@@ -899,7 +900,7 @@ int main(void) {
     int x = 123;
     int y = 45;
 
-    REG_DISPCNT = ( MODE_0|BG1_ON | OBJ_ENABLE | OBJ_1D_MAP );	
+    REG_DISPCNT = ( MODE_0 | BG0_ON | BG1_ON | OBJ_ENABLE | OBJ_1D_MAP );	
 
     // setup palettes
     dmaCopy( spacePal, BG_PALETTE, spacePalLen );
@@ -908,10 +909,13 @@ int main(void) {
     dmaCopy( ufoPal, SPRITE_PALETTE + 32, ufoPalLen );
     dmaCopy( boomPal, SPRITE_PALETTE + 48, boomPalLen );
     //dmaCopy( gb_rockPal, SPRITE_PALETTE + 64, gb_rockPalLen ); same as UFO.
+    dmaCopy( titlePal, BG_PALETTE+16, titlePalLen );
 
     // tiles
     dmaCopy( spaceTiles, TILE_BASE_ADR(0), spaceTilesLen );
     dmaCopy( spaceMap, MAP_BASE_ADR(8), spaceMapLen );
+    dmaCopy( titleTiles, TILE_BASE_ADR(2), titleTilesLen );
+    dmaCopy( titleMap, MAP_BASE_ADR(12), titleMapLen );
 
     dmaCopy( shotTiles, OBJ_BASE_ADR, shotTilesLen );
     dmaCopy( shipTiles, OBJ_BASE_ADR + shipOffset, shipTilesLen );
@@ -923,6 +927,7 @@ int main(void) {
 
 
     REG_BG1CNT = ( BG_SIZE_3 | BG_16_COLOR | TILE_BASE(0) | MAP_BASE(8) );
+    REG_BG0CNT = ( BG_SIZE_0 | BG_16_COLOR | TILE_BASE(2) | MAP_BASE(12) );
 
 
     // clear things out
