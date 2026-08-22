@@ -35,8 +35,11 @@ TO get this to work include the files created
 #include "my_image.h"
 ```
 
-and copy using `dmaCopy`. `memcpy()` may not work.
-
+and copy using `dmaCopy`. `memcpy()` may not work. 
+*IMP* VRAM, Palette RAM, and OAM don't support 8-bit byte writes. 
+memcpy may or may not use 16 or 32 bit writes, dpending on the optimization.
+to be safe, use dmaCopy
+ 
 ```c
 dmaCopy( my_imagePal, BG_PALETTE, my_imagePalLen );  
 dmaCopy( my_imageTiles, bg_tile_vram, my_imageTilesLen );
