@@ -83,6 +83,7 @@ gba_sio.h:
 
 */
 
+  
     /*
 gba_sio.h:
     #define SIO_115200              0x0003
@@ -95,20 +96,22 @@ gba_sio.h:
     const char *mesg = "GBA ROCKS!\r\n";
     for( int i=0; i < strlen( mesg ); ++i ) {
         //   4     Send Data Flag      (0=Not Full,  1=Full)    (Read Only)
-        while (REG_SIOCNT & UART_SEND_DATA_FLAG)  // loop while full
-        {
-        }
-        REG_SIODATA8 = mesg[i];;
+        while (REG_SIOCNT & UART_SEND_DATA_FLAG) {}  // loop while Send Data flag is full (1)
+        REG_SIODATA8 = mesg[i]; // use SIODATA8 to send a byte
     }
 
 
     while (1) {
     
   // 5     Receive Data Flag   (0=Not Empty, 1=Empty)   (Read Only)
-        while( REG_SIOCNT & UART_RECEIVE_DATA_FLAG ) {  // loop while empty
-        }
-        uint8_t c = REG_SIODATA8;
+        while( REG_SIOCNT & UART_RECEIVE_DATA_FLAG ) {}  // loop while Receive Data flag is empty (1)
+        uint8_t c = REG_SIODATA8;  // read a byte
         iprintf("%c", c );
+
+        // echo it back
+        while (REG_SIOCNT & UART_SEND_DATA_FLAG) {}  // loop while Send Data flag is full (1)
+        REG_SIODATA8 = c; // use SIODATA8 to send a byte
+
         VBlankIntrWait();
     }
 
