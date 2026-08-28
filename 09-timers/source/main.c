@@ -50,15 +50,7 @@ int main(void) {
   8-15  Not used
 */
     REG_TM2CNT_H = 0;   // stop timer (bit 7 really, but I'm clearing everything )
-    REG_TM2CNT_L = 0;   // reset counter
 
-    // use bit7 (TIMER_START) to start the timer
-    // use bits 0&1 to set division 16.78 MHz / 1024 ~= 16384 Hz  (TIMER_DIV_1024 == 3 )
-    REG_TM2CNT_H = TIMER_START | TIMER_DIV_1024;
-
-        
-
-	while (1) {
 /*
 4000100h - TM0CNT_L - Timer 0 Counter/Reload (R/W)
 4000104h - TM1CNT_L - Timer 1 Counter/Reload (R/W)
@@ -66,6 +58,17 @@ int main(void) {
 400010Ch - TM3CNT_L - Timer 3 Counter/Reload (R/W)
 Writing to these registers initializes the <reload> value (but does not directly affect the current counter value). Reading returns the current <counter> value (or the recent/frozen counter value if the timer has been stopped).
 */
+    REG_TM2CNT_L = 0;   // set reload value to 0 (use the FULL 16-bit count)
+
+
+    // use bit7 (TIMER_START) to start the timer
+    // use bits 0&1 to set division 16.78 MHz / 1024 ~= 16384 Hz  (TIMER_DIV_1024 == 3 )
+    REG_TM2CNT_H = TIMER_START | TIMER_DIV_1024;
+
+        
+
+
+	while (1) {
         uint16_t start_time = REG_TM2CNT_L;   // lower 16 is current timer val
 
         VBlankIntrWait();
