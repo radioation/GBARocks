@@ -117,7 +117,7 @@ int main(void) {
 		OAM_MEM[0].attr0 |= ( y & 0x00ff );
 
 		OAM_MEM[0].attr1 &= 0xfe00;
-		OAM_MEM[0].attr1 |= ( x & 0x00ff );
+		OAM_MEM[0].attr1 |= ( x & 0x01ff );
 	}
 }
 

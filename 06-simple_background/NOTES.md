@@ -1,15 +1,15 @@
 # TL;DR
 
-CHARACTER/TILE backgrounds need
+CHARACTER/TILE backgrounds need:
 
 1. Palette: can copy your custom palettes to `BG_PALETTE`
 2. Tile data in vram. can copy to `TITLE_BASE_ADR( t )`
 3. MAP data in vram. can copy to `MAP_BASE_ADR( m )`
-4. tell control register where
+4. tell control register where with `TILE_BASE(t)` and `MAP_BASE(m)`
 `REG_BG2CNT = ( BG_SIZE_0 | BG_16_COLOR | TILE_BASE(t) | MAP_BASE(m) );`
 
 
-#  TExt Backgrounds
+#  Text Backgrounds
 * Text backgrounds are tile-based like the C64/A8 text modes.
 
 * 3 modes 
@@ -114,5 +114,5 @@ gba_video.h:#define	REG_BG3VOFS		*((vu16 *)(REG_BASE + 0x1e))	// BG 3 V Offset
 `REG_BG3VOFS`		0x0400 001e
 
 
-# generat1ee level
+# Generate a level with Python
 python3 genlvl.py  --width 15 --height 10 --scale 8 --seed 125

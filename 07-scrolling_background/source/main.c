@@ -175,13 +175,13 @@ int main(void) {
 			if( shipPosY >= PLAYFIELD_HEIGHT - PLAYER_HEIGHT + 8 ) shipPosY = PLAYFIELD_HEIGHT - PLAYER_HEIGHT + 8;
 		}
 
-		// udpate pos
+		// update pos
 		int x = shipPosX - camPosX;
 		int y = shipPosY - camPosY;
 		OAM_MEM[0].attr0 &= 0xff00;
 		OAM_MEM[0].attr0 |= ( y & 0x00ff );
 		OAM_MEM[0].attr1 &= 0xfe00;
-		OAM_MEM[0].attr1 |= ( x & 0x00ff );
+		OAM_MEM[0].attr1 |= ( x & 0x01ff );
 
 
 		tick++;

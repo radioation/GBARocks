@@ -226,7 +226,7 @@ void update() {
 	OAM_MEM[0].attr0 &= 0xff00;
 	OAM_MEM[0].attr0 |= ( shipSprite.pos_y & 0x00ff );
 	OAM_MEM[0].attr1 &= 0xfe00;
-	OAM_MEM[0].attr1 |= ( shipSprite.pos_x & 0x00ff );
+	OAM_MEM[0].attr1 |= ( shipSprite.pos_x & 0x01ff );
 
 
 	// shots
@@ -245,7 +245,7 @@ void update() {
 			OAM_MEM[shipShots[i].obj_index].attr0 &= 0xff00;
 			OAM_MEM[shipShots[i].obj_index].attr0 |= ( shipShots[i].pos_y & 0x00ff );
 			OAM_MEM[shipShots[i].obj_index].attr1 &= 0xfe00;
-			OAM_MEM[shipShots[i].obj_index].attr1 |= ( shipShots[i].pos_x & 0x00ff );
+			OAM_MEM[shipShots[i].obj_index].attr1 |= ( shipShots[i].pos_x & 0x01ff );
 		} else {
 			OAM_MEM[shipShots[i].obj_index].attr0 &= 0xff00;
 			OAM_MEM[shipShots[i].obj_index].attr0 |=  166 ;
@@ -262,7 +262,7 @@ void update() {
 			OAM_MEM[ufos[i].obj_index].attr0 &= 0xff00;
 			OAM_MEM[ufos[i].obj_index].attr0 |= ( ufos[i].pos_y & 0x00ff );
 			OAM_MEM[ufos[i].obj_index].attr1 &= 0xfe00;
-			OAM_MEM[ufos[i].obj_index].attr1 |= ( ufos[i].pos_x & 0x00ff );
+			OAM_MEM[ufos[i].obj_index].attr1 |= ( ufos[i].pos_x & 0x01ff );
 		} else {
 			//SPR_setPosition( ufos[i].sprite, -32, 230 );
 			OAM_MEM[ufos[i].obj_index].attr0 &= 0xff00;

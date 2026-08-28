@@ -1,7 +1,6 @@
 # Hello World
-THis is not much of a hello world, but AFAIK libgba doesn't bother with fonts, so a simple 
-fill of VRAM with red seems like a decent first step. libGBA seems pretty undocumented,
- but the headers (at least so far) look usable.
+This is not much of a hello world. It's a simple fill of VRAM with red. libGBA seems pretty undocumented,
+but the headers (at least so far) look usable.
 
 
 I've been looking over Kyle Halladay's [GBA By Example](https://kylehalladay.com/blog/tutorial/gba/2017/03/28/GBA-By-Example-1.html)
@@ -65,7 +64,7 @@ irqEnable(IRQ_VBLANK);
 ...
 
 while(1) {
-   VBLankIntrWait();
+   VBlankIntrWait();
 }
 ```
 I doubt I need to wait for the VBlank in this test program (nothing to cause screen tearing 
