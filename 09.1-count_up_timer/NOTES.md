@@ -19,5 +19,7 @@
     REG_TM3CNT_H = TIMER_START | TIMER_COUNT; 
 ```
 
+* now timer 3 can count up to 65535 seconds (18 hours~ish)
+
 
 
