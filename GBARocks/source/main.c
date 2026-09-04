@@ -11,7 +11,7 @@
 #include "myfix.h"
 
 #include "ufo.h"
-#include "ship.h"
+#include "ship24.h"
 #include "boom.h"
 #include "shot.h"
 #include "space.h"
@@ -100,12 +100,12 @@ static int ship_ticks = 0;
 const u8 angleStep = 2;
 
 const int32_t shotOffset = 0;
-const int32_t shipOffset = 128;
-const int32_t ufoOffset = 128 + 2048;
-const int32_t boomOffset = 128 + 2048 + 1024;
-const int32_t rockOffset = 128 + 2048 + 1024 + 4608;
-const int32_t midRockOffset = 128 + 2048 + 1024 + 4608 + 4096;
-const int32_t smallRockOffset = 128 + 2048 + 1024 + 4608 + 4096 + 1024;
+const int32_t ship24Offset = 128;
+const int32_t ufoOffset = 128 + 4096;
+const int32_t boomOffset = 128 + 4096 + 1024;
+const int32_t rockOffset = 128 + 4096 + 1024 + 4608;
+const int32_t midRockOffset = 128 + 4096 + 1024 + 4608 + 4096;
+const int32_t smallRockOffset = 128 + 4096 + 1024 + 4608 + 4096 + 1024;
 
 
 struct CP_SPRITE shipSprite; // only one player
@@ -193,16 +193,16 @@ void readKeys() {
     if( true ) {
         if( keys & KEY_LEFT ) {
             shipDir -= angleStep ;
-            // total of 16 frames but 256 dirs. 1 frame has to cover 16 directions
-            u8 tmpDir =  shipDir >> 4;
-            OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(4 + (tmpDir << 2)) | OBJ_PRIORITY(0);
+            // total of 32 frames but 256 dirs. 1 frame has to cover 8 steps 
+            u8 tmpDir =  shipDir >> 3;
+            OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR( 4+ (tmpDir << 2)) | OBJ_PRIORITY(0);
 
         }
         if( keys & KEY_RIGHT ) {
             shipDir += angleStep;
             // need to update frame 
-            u8 tmpDir = shipDir >> 4;
-            OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(4 + (tmpDir << 2)) | OBJ_PRIORITY(0);
+            u8 tmpDir =  shipDir >> 3;
+            OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR( 4+ (tmpDir << 2)) | OBJ_PRIORITY(0);
 
         }
         if( down & KEY_A ) {
@@ -905,7 +905,7 @@ int main(void) {
     // setup palettes
     dmaCopy( spacePal, BG_PALETTE, spacePalLen );
     dmaCopy( shotPal, SPRITE_PALETTE, shotPalLen );
-    dmaCopy( shipPal, SPRITE_PALETTE + 16, shipPalLen );
+    dmaCopy( ship24Pal, SPRITE_PALETTE + 16, ship24PalLen );
     dmaCopy( ufoPal, SPRITE_PALETTE + 32, ufoPalLen );
     dmaCopy( boomPal, SPRITE_PALETTE + 48, boomPalLen );
     //dmaCopy( gb_rockPal, SPRITE_PALETTE + 64, gb_rockPalLen ); same as UFO.
@@ -918,7 +918,7 @@ int main(void) {
     dmaCopy( titleMap, MAP_BASE_ADR(12), titleMapLen );
 
     dmaCopy( shotTiles, OBJ_BASE_ADR, shotTilesLen );
-    dmaCopy( shipTiles, OBJ_BASE_ADR + shipOffset, shipTilesLen );
+    dmaCopy( ship24Tiles, OBJ_BASE_ADR + ship24Offset, ship24TilesLen );
     dmaCopy( ufoTiles, OBJ_BASE_ADR + ufoOffset, ufoTilesLen );
     dmaCopy( boomTiles, OBJ_BASE_ADR + boomOffset, boomTilesLen );
     dmaCopy( gb_rockTiles, OBJ_BASE_ADR + rockOffset, gb_rockTilesLen );
@@ -948,7 +948,7 @@ int main(void) {
     shipSprite.obj_index = 0;
     OAM_MEM[0].attr0 = ATTR0_NORMAL | ATTR0_COLOR_16 | ATTR0_SQUARE | OBJ_Y(MYFIX(shipSprite.pos_y));	
     OAM_MEM[0].attr1 = ATTR1_SIZE_16 | OBJ_X(MYFIX(shipSprite.pos_x));
-    OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(shipOffset/32) | OBJ_PRIORITY(0);
+    OAM_MEM[0].attr2 = ATTR2_PALETTE(1) | OBJ_CHAR(ship24Offset/32) | OBJ_PRIORITY(0);
 
     int lastIndex = createExplosions(1);	
     lastIndex = createUFO(lastIndex);	
