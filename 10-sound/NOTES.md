@@ -46,4 +46,12 @@ or setup a struct with details to alter playback a bit
 ```
 
 
+4. call `mmFrame()` in your game loop to update audio 
+
+```c
+while(true0 {
+        VBlankIntrWait();
+        mmFrame();
+
+```
 
