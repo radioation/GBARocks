@@ -8,6 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <maxmod.h>
+#include "soundbank.h"
+#include "soundbank_bin.h"
+
 #include "myfix.h"
 
 #include "ufo.h"
@@ -214,6 +218,7 @@ void readKeys() {
                     shipShots[i].pos_y = shipSprite.pos_y + MYFIX( 4 );
                     shipShots[i].vel_x = shipSprite.vel_x + ( thrustX[shipDir] << 4 );
                     shipShots[i].vel_y = shipSprite.vel_y + ( thrustY[shipDir] << 4 );
+                    mmEffect(SFX_LASER );
                     break;
                 }
             }
@@ -383,6 +388,7 @@ static void showExplosion(myfix pos_x, myfix pos_y)
         //SPR_setPosition(explosion_sprites[currentExplosion], x, y );
 
         //XGM_startPlayPCM(SND_EXPLOSION, 10, SOUND_PCM_CH3);
+        mmEffect(SFX_EXPLOSION );
 
         // point to next explosion
         ++currentExplosion;
@@ -896,6 +902,14 @@ int main(void) {
     irqInit();
     irqEnable(IRQ_VBLANK);
 
+    // Maxmod requires the vblank interrupt to reset sound DMA.
+    // Link the VBlank interrupt to mmVBlank, and enable it.
+    irqSet( IRQ_VBLANK, mmVBlank );
+    irqEnable(IRQ_VBLANK);
+
+    // initialise maxmod with soundbank and 8 channels
+    mmInitDefault( (mm_addr)soundbank_bin, 8 );
+
     //consoleDebugInit(DebugDevice_NOCASH);
     int x = 123;
     int y = 45;
@@ -965,6 +979,7 @@ int main(void) {
 
     while (1) {
         VBlankIntrWait();
+        mmFrame(); // step through music/sound playback
         tick++;
         //        iprintf("\x1b[1;1H");
         //        iprintf("d: %d a: %d v: %d  \n", shipDir, fixToInt(shipAccelX), fixToInt( shipSprite.vel_x )); 
