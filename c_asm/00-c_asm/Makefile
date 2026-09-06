@@ -32,8 +32,11 @@ MUSIC		:=
 #---------------------------------------------------------------------------------
 ARCH	:=	-mthumb -mthumb-interwork
 
-CFLAGS	:=	-g -Wall -O2\
+#CFLAGS	:=	-g -Wall -O2\
+
+CFLAGS	:=	-Wall -O2\
 		-mcpu=arm7tdmi -mtune=arm7tdmi\
+        -save-temps\
 		$(ARCH)
 
 CFLAGS	+=	$(INCLUDE)
