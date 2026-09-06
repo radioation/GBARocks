@@ -1,12 +1,17 @@
 # NOTES
 ## TL;DR
-* `arm` : gells gas to generate ARM and not Thumb code?
+* `.arm` : gells gas to generate ARM and not Thumb code?
 
 * `.text` : Tells as to assemble the following statements onto the end of the text subsection numbered subsection, which is an absolute expression. If subsection is omitted, subsection number zero is used.
 
 
 * `.global` `.globl` : .global makes the symbol visible to ld. This lets
   us link to it from C
+
+
+
+
+
 
 ## C and ASM examples
 
