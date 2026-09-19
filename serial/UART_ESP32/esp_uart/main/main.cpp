@@ -43,6 +43,8 @@ enum
   CMD_GET_VERSION = 0x01,
   CMD_TIME = 0x02,
   CMD_ECHO = 0x03,
+  CMD_JOIN = 0x04,
+  CMD_MOVE = 0x05,
 
   RESP_OK = 0x80,
   RESP_PING = 0x81,
