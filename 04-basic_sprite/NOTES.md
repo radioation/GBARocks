@@ -32,6 +32,9 @@ For sprites we need
 Before getting to sprites, it's important to read Tonc's [video introduction](https://gbadev.net/tonc/video.html) 
 and [sprite and tile background overview](https://gbadev.net/tonc/objbg.html) for some background.
 
+GBATek [OAM Attributes](https://problemkaputt.de/gbatek-lcd-obj-oam-attributes.htm)
+
+
 ## Palettes
 The GBA can display 16-bit colors in 5.5.5 format (so 15 really) and is arranged as BGR `xbbbbbgggggrrrrr`.  
 * The GBA has two 256-entry palettes. One for sprites and one for backgrounds.
@@ -81,6 +84,8 @@ flip, alpha-blend, and do some affine transformations on sprites.
 From what I'm seeing in  Akkera102's [7th tutorial](https://akkera102.sakura.ne.jp/gbadev/?tutorial.7)
 tile/sprite data location depend on the current graphics mode. In bitmap mode, tile data starts at
 0x6014000. In a tile mode, it starts at	0x06010000. 
+
+
 
 
 
