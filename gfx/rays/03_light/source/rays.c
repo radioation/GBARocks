@@ -7,10 +7,10 @@
 Scene scene;
 
 void init_scene() {
-  scene.spheres[0] = (Sphere){ .center = {0,-1,3}, .radius = 1.0, .color = RGB5(31,0,0 )};
-  scene.spheres[1] = (Sphere){ .center = {2, 0, 4}, .radius = 1.0, .color = RGB5(0,0,31 )};
-  scene.spheres[2] = (Sphere) { .center = {-2,0, 4}, .radius = 1.0, .color = RGB5(0,31,0 )};
-  scene.spheres[3] = (Sphere) { .center = {0, -5001, 0}, .radius = 5000, .color = RGB5(31,31,0 )};
+  scene.spheres[0] = (Sphere){ .center = {0,-1,3}, .radius = 1.0, .color = RGB5(31,0,0 ), .specular = 500};
+  scene.spheres[1] = (Sphere){ .center = {2, 0, 4}, .radius = 1.0, .color = RGB5(0,0,31 ), .specular = 500};
+  scene.spheres[2] = (Sphere) { .center = {-2,0, 4}, .radius = 1.0, .color = RGB5(0,31,0 ), .specular = 10};
+  scene.spheres[3] = (Sphere) { .center = {0, -5001, 0}, .radius = 5000, .color = RGB5(31,31,0 ), .specular = 1000};
   scene.lights[0] = (Light) { .type = AMBIENT, .intensity = 0.2, {} };
   scene.lights[1] = (Light) { .type = POINT, .intensity = 0.6, .position = (Vec3) { 2,1,0 }, .direction = {} };
   scene.lights[2] = (Light) { .type = DIRECTIONAL, .intensity = 0.2, .position = {},  .direction = (Vec3) {1,4,4}};

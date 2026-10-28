@@ -13,6 +13,7 @@ typedef struct {
   Vec3 center;
   float radius;
   int16_t color;
+  int16_t specular;
 } Sphere;
 
 #define NUM_SPHERES 4
