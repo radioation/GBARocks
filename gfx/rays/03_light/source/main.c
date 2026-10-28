@@ -26,6 +26,7 @@ int main(void) {
   // set graphics mode
   SetMode( MODE_3 | BG2_ON );
 
+  init_scene();
   // tracer
   Vec3 O =(Vec3) {0.0f, 0.0f, 0.0f};
   for( int x = -CANVAS_WIDTH/2; x < CANVAS_WIDTH/2; ++x ) {

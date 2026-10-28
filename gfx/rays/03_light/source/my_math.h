@@ -19,6 +19,9 @@ typedef struct {
 float dot( Vec3 a, Vec3 b );
 Vec3 add( Vec3 a, Vec3 b );
 Vec3 subtract( Vec3 a,Vec3  b );
+float length( Vec3 a );
+Vec3 mul( Vec3 a, float scale );
+Vec3 divide( Vec3 a, float val );
 //float cross( float *a, float *b );
 
 #endif // _MY_MATH_H_
