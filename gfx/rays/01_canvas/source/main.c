@@ -28,7 +28,7 @@ int main(void) {
     // 
     SetMode( MODE_3 | BG2_ON );
 
-    // get start of video ram
+
 
     // set every pixel to blue 
     for( int i=0; i < 240*160; ++i ) {

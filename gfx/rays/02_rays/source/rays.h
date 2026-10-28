@@ -9,13 +9,15 @@
 #define VIEW_DISTANCE 1
 
 typedef struct {
-	Vec3 center;
-	float radius;
-	int16_t color;
+  Vec3 center;
+  float radius;
+  int16_t color;
 } sphere;
 
 
-Point2 canvas_to_viewport( Point2 c );
-
+extern sphere spheres[];
+Vec3  canvas_to_viewport( float x, float y);
+int16_t trace_ray( Vec3 O, Vec3 D, float t_min, float t_max );
+bool intersect_ray_sphere( Vec3 O, Vec3 D, sphere S, float *t1, float *t2 );
 
 #endif // _RAYS_H_
