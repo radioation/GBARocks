@@ -45,7 +45,7 @@ int16_t trace_ray( Vec3 O, Vec3 D, float t_min, float t_max ) {
   Vec3 P = add( O, mul( D, closest_t ) );
   Vec3 N = subtract( P, scene.spheres[closest_sphere_index].center );
   N = divide( N, length( N ) );
-  float l =  compute_lighting( P, N );
+  float l =  compute_lighting( P, N, mul( D, -1.0), scene.spheres[closest_sphere_index].specular );
   int r = RGB5_GET_RED(scene.spheres[closest_sphere_index].color)* l; 
   if( r > 31 ) r = 31;
   int g = RGB5_GET_GREEN(scene.spheres[closest_sphere_index].color)* l;
@@ -69,7 +69,7 @@ bool intersect_ray_sphere( Vec3 O, Vec3 D, Sphere S, float *t1, float *t2 ) {
   return true;
 }
 
-float compute_lighting( Vec3 P, Vec3 N ){
+float compute_lighting( Vec3 P, Vec3 N, Vec3 V, int16_t s ){
   float i = 0.0;
   for ( int j =0; j < NUM_LIGHTS; ++j ) {
     if( scene.lights[j].type == AMBIENT ) {
@@ -81,9 +81,21 @@ float compute_lighting( Vec3 P, Vec3 N ){
       }else {
         L =scene.lights[j].direction;
       }
+      // COMPUTE DIFFUSE LIGHTING
       float n_dot_l = dot( N, L );
       if ( n_dot_l > 0 ) {
         i += scene.lights[j].intensity * n_dot_l / ( length(N) * length(L ) );
+      }
+
+      // COMPUTE SPECULAR
+      if ( s != -1 ) {
+        Vec3 R = mul( N, 2 );
+        R = mul( R, dot( N, L ));
+        R = subtract( R, L );
+        float r_dot_v = dot(R, V );
+        if ( r_dot_v > 0) {
+          i += scene.lights[j].intensity * pow( r_dot_v / ( length(R) * length(V)), s );
+        }
       }
     }
   }

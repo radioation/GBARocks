@@ -25,9 +25,25 @@ typedef struct {
 
 void init_scene();
 
+// x, y are canvas coordinates. returns 3d vector for viewport coord
 Vec3  canvas_to_viewport( float x, float y);
+
+// O - camera
+// D - direction 
+// t_min, t_max - range of t we use 
 int16_t trace_ray( Vec3 O, Vec3 D, float t_min, float t_max );
+
+// O - camera
+// D - direction 
+// S - Sphere we're checking for intersection
+// flase if no intersection. Sets  t1 and t2 if found
 bool intersect_ray_sphere( Vec3 O, Vec3 D, Sphere S, float *t1, float *t2 );
-float compute_lighting( Vec3 P, Vec3 N );
+
+// P - point on sphere we intersected
+// N - normal on sphere at intersection
+// V - view vector pointing from P to camera 
+// s - specular intensity
+// returns lighting scalar
+float compute_lighting( Vec3 P, Vec3 N, Vec3 V, int16_t s );
 
 #endif // _RAYS_H_
