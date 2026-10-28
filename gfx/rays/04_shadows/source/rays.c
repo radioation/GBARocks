@@ -27,21 +27,7 @@ Vec3  canvas_to_viewport( float x, float y ){
 int16_t trace_ray( Vec3 O, Vec3 D, float t_min, float t_max ) {
   float closest_t = FLT_MAX;
   //sphere *closest_sphere = NULL;
-  int closest_sphere_index = -1;
-  for( int i=0; i < NUM_SPHERES; i++ ) {
-    float t1, t2;
-    if( intersect_ray_sphere( O, D, scene.spheres[i], &t1, &t2 ) ){
-      if ( t1 > t_min && t1 < t_max && t1 < closest_t ) {
-        closest_t = t1;
-        closest_sphere_index = i;
-      }
-      if ( t2 > t_min && t2 < t_max && t2 < closest_t ) {
-        closest_t = t2;
-        closest_sphere_index = i;
-      }
-    }
-  }
-
+  int closest_sphere_index = closest_intersection( O,D, t_min, t_max, &closest_t );
   if( closest_sphere_index < -1  ) {
     return RGB5(31,31,31);
   }
@@ -74,17 +60,30 @@ bool intersect_ray_sphere( Vec3 O, Vec3 D, Sphere S, float *t1, float *t2 ) {
 
 float compute_lighting( Vec3 P, Vec3 N, Vec3 V, int16_t s ){
   float i = 0.0;
+  float t_max = 0.0;
   for ( int j =0; j < NUM_LIGHTS; ++j ) {
     if( scene.lights[j].type == AMBIENT ) {
       i += scene.lights[j].intensity;
     } else {
 
-      Vec3 L; // Direction of Light
+      Vec3 L; // Direction of Light 
       if( scene.lights[j].type == POINT ) {
+        // L's magnitude is the distance between  Light source and point on scene object
         L = subtract( scene.lights[j].position, P );
+        t_max = 1; // we only want objects up to the distance of the light.
       }else {
         L =scene.lights[j].direction;
+        t_max = FLT_MAX; // directional light is infinitely far away,so any object in front of P
       }
+
+      // Check for shadows
+      float shadow_t = FLT_MAX;
+      int shadow_sphere_index  = closest_intersection( P, L, 0.001, t_max, &shadow_t );
+      if( shadow_sphere_index >= 0 ) {
+        // we're obstructed. don't bother with lighting
+        continue;
+      }
+
       // COMPUTE DIFFUSE LIGHTING
       float n_dot_l = dot( N, L );
       if ( n_dot_l > 0 ) {
@@ -107,5 +106,28 @@ float compute_lighting( Vec3 P, Vec3 N, Vec3 V, int16_t s ){
     }
   }
   return i;
+
+}
+
+
+int closest_intersection( Vec3 O, Vec3 D, float t_min, float t_max, float *t_closest ) {
+  float closest_t = FLT_MAX;
+  //sphere *closest_sphere = NULL;
+  int closest_sphere_index = -1;
+  for( int i=0; i < NUM_SPHERES; i++ ) {
+    float t1, t2;
+    if( intersect_ray_sphere( O, D, scene.spheres[i], &t1, &t2 ) ){
+      if ( t1 > t_min && t1 < t_max && t1 < closest_t ) {
+        closest_t = t1;
+        closest_sphere_index = i;
+      }
+      if ( t2 > t_min && t2 < t_max && t2 < closest_t ) {
+        closest_t = t2;
+        closest_sphere_index = i;
+      }
+    }
+  }
+  *t_closest = closest_t;
+  return closest_sphere_index;
 
 }

@@ -31,6 +31,7 @@ Vec3  canvas_to_viewport( float x, float y);
 // O - camera
 // D - direction 
 // t_min, t_max - range of t we use 
+// RETURNS: color as 16 bit int
 int16_t trace_ray( Vec3 O, Vec3 D, float t_min, float t_max );
 
 // O - camera
@@ -45,5 +46,16 @@ bool intersect_ray_sphere( Vec3 O, Vec3 D, Sphere S, float *t1, float *t2 );
 // s - specular intensity
 // returns lighting scalar
 float compute_lighting( Vec3 P, Vec3 N, Vec3 V, int16_t s );
+
+// O - camera
+// D - direction 
+// t_min, t_max - range of t we use 
+
+// RETURNS: index of closest sphere.(-1 none found).  t_closest is closest sphere
+int closest_intersection( Vec3 O, Vec3 D, float t_min, float t_max, float *t_closest );
+
+//  P -point on object 
+//  N - Normal
+//  V - view angle
 
 #endif // _RAYS_H_

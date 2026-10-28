@@ -127,5 +127,39 @@ away from R
 This also gets added to the ambient intensity.
 
 # Shadows
-If there's an object between the point and the light, don't add the illumination from this light.
+If there's an object between the point and the light, don't add the
+illumination from this light.
+
+The book uses 3 types of light sources. Ambient has no direction, so we don't 
+use it for shadow calculation.
+
+We have
+* P - the point on the scene object/sphere
+* L - the direction of light
+we're back to using a ray. IN this case from the point P along 
+the direction of light: `P + t*L`
+
+## Directional Light
+with directional lights we have 
+* a single direction L 
+* objects on the opposite side of the P's object won't cast shadows 
+  so `t_min` = 0
+* 'infinitely' far away light source, any objects other objects 
+  might cast a shadow, so `t_max` = INF
+
+## Point LIght
+Two things 
+1. L is not constant, so we need to compute its direction
+  *IMP* in this case we'd be getting L from light position to
+  the point p or `Light.positiion - P`. 
+2. ojbects farther away from P than the light source won't 
+  cast a shadow on P. From #1, we know that L's magnitude
+  is the distance from L to P.  SO in this case `P +t * L` 
+  `t` =1 gives us `P + L` or the position of the light 
+  from the object. anything larger than t will be farther
+  away from P than the light. `t_max` == 1 in this case.
+
+
+
+
 
