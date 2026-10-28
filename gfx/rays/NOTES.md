@@ -1,8 +1,10 @@
 # About.
 THese are just some code written while reading 'Computer Graphics from Scratch' 
-by Gabriel Gambetta. 
+by Gabriel Gambetta.  Forumlas don't look great in txt/md docs, so read the book.
 
-This is a learning exercise and I'm largely not bothering with efficiency.
+This is a learning exercise and I'm largely not bothering with efficiency. I also
+don't plan on doing everything in the book. Just enough to get a feel for how
+things work.
 
 # coordinates
 
@@ -36,17 +38,128 @@ Objects we want to render are placed in a Scene. The scene is 3D with
   * Z+ is into the scene
   * X+ is to the right
 
-* a `Videport` is used to look at the scene. It
+* a `Viewport` is used to look at the scene. It
   * has dimensions `V_w` and `V_h`
   * is distance `d` away from O 
   * centered on Z+ and perpendicular to XY
 
 ## Canvas to Viewport
 The chosen orientation of the viewport makes it easy to get viewport coordinates
-from the canvas coordinates (a simple scale factor)`
+from the canvas coordinates (a simple scale factor)
 
 ` V_x = CANVAS_x * V_w/CANVAS_WIDTH` or  ` V_x = C_x * V_w/C_w`
 ` V_y = CANVAS_y * V_h/CANVAS_HEIGHT` or ` V_y = C_y * V_h/C_h`
+` V_z = d`.
+
+##  Catching Rays
+It's all math. Without going into things too deeply, we use an 
+equation to represent the current ray starting from the camera O
+and passing through the Viewport V.  Any point P can be found with
+
+`P = O +t( V- O )`  or `P=O+tD` where D is the direction defined by V-O
+where t is any number. Realistically though we just need positive t,
+and basically just t values past the viewport.
+
+*IMP* note that
+1. t=0 becomes `P = O` (at the camera)
+2. t=1 -> `P = O + (V -O )` = `P = V + O - O` = `P = V`.  (at the viewport)
+so we are about objects where t>1.  Our `t_min` 
+
+
+Spheres are easily defined as all points at distance r (radius) from a center point C
+
+`distance(P,C) = r`
+
+basically the length of any point from C is positive and equal to r
+`|P-C| = r`
+this can be rewritten as
+`<P-C, P-C> = r^2`  (see the book, will do actual long-winded on paper)
+
+
+we basically want to find the intersection of the ray with the sphere. 
+We don't have to plug in every possible t and match the result up with 
+the sphere equation, we just use the discriminant. (again, see book)
+```txt
+a = <D, D>
+
+b = w<CO, D>
+
+c = <CO, CO> = r^2
+
+at^2 + bt + c = 0
+
+```
+so solve for `{t1, t2} = (-b + sqrt( b^2 - 4ac) / 2a`
+
+
+# Light
+## Types
+No surprises here:
+* Ambient: all around
+* Point: like a light bulb
+* Directional: like the sun
+
+These are added up.  Ambient has no direction, so it's a constant.
+
+The intensitiy of Point and Directional lighting will vary depending on the
+direction relative to the  surface of scene objects
+
+
+## Diffuse (Matte)
+The fraction of light that is reflected is a function of the angle between the
+spurface normal(N) and the direction of light (L). This refleciton is equal
+in every direction.
+
+This gets added to the ambient intensity.
+
+## Specular (Everything's Shiny Cap'n)
+For a  perfect mirror the ray light (L) gets reflected in a *single* direction(R). 
+
+Less-than-perfect polish means less light will be reflectin in direction R, and
+some of it will reflect in directions *close to* R. 
+Shiny ness determines how rapidly the reflected light decreases as you move
+away from R
+
+*IMP* R is derived from the surface normal N and the light direction L
+*IMP* the amount of light we see is related to how close R is to our Viewing Angle (V)
+
+
+This also gets added to the ambient intensity.
+
+# Shadows
+If there's an object between the point and the light, don't add the
+illumination from this light.
+
+The book uses 3 types of light sources. Ambient has no direction, so we don't 
+use it for shadow calculation.
+
+We have
+* P - the point on the scene object/sphere
+* L - the direction of light
+we're back to using a ray. IN this case from the point P along 
+the direction of light: `P + t*L`
+
+## Directional Light
+with directional lights we have 
+* a single direction L 
+* objects on the opposite side of the P's object won't cast shadows 
+  so `t_min` = 0
+* 'infinitely' far away light source, any objects other objects 
+  might cast a shadow, so `t_max` = INF
+
+## Point LIght
+Two things 
+1. L is not constant, so we need to compute its direction
+  *IMP* in this case we'd be getting L from light position to
+  the point p or `Light.positiion - P`. 
+2. ojbects farther away from P than the light source won't 
+  cast a shadow on P. From #1, we know that L's magnitude
+  is the distance from L to P.  SO in this case `P +t * L` 
+  `t` =1 gives us `P + L` or the position of the light 
+  from the object. anything larger than t will be farther
+  away from P than the light. `t_max` == 1 in this case.
+
+
 
 
 

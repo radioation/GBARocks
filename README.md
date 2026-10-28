@@ -17,7 +17,7 @@ I mostly write code on Fedora, so I setup devkitPro following the official
 1. Install `pacman` with `dnf`
 ```bash
 sudo dnf update
-sudo dnf isntall pacman
+sudo dnf install pacman
 sudo packman-key --init
 ```
 
