@@ -60,6 +60,12 @@ and passing through the Viewport V.  Any point P can be found with
 where t is any number. Realistically though we just need positive t,
 and basically just t values past the viewport.
 
+*IMP* note that
+1. t=0 becomes `P = O` (at the camera)
+2. t=1 -> `P = O + (V -O )` = `P = V + O - O` = `P = V`.  (at the viewport)
+so we are about objects where t>1.  Our `t_min` 
+
+
 Spheres are easily defined as all points at distance r (radius) from a center point C
 
 `distance(P,C) = r`
@@ -120,4 +126,6 @@ away from R
 
 This also gets added to the ambient intensity.
 
+# Shadows
+If there's an object between the point and the light, don't add the illumination from this light.
 

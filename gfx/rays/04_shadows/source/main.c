@@ -28,10 +28,13 @@ int main(void) {
 
   init_scene();
   // tracer
-  Vec3 O =(Vec3) {0.0f, 0.0f, 0.0f};
+  Vec3 O =(Vec3) {0.0f, 0.0f, 0.0f}; // camera location
+                                     //
   for( int x = -CANVAS_WIDTH/2; x < CANVAS_WIDTH/2; ++x ) {
     for( int y = -CANVAS_HEIGHT/2; y < CANVAS_HEIGHT/2; ++y ) {
-      Vec3 D = canvas_to_viewport( x,y);
+      Vec3 D = canvas_to_viewport( x,y); // get direction to point on viewport
+      // t_min == 1 ( we care about ojbects past theview port
+      // t_max = FLT_MAX (or infinity)
       u16 color = trace_ray( O, D, 1, FLT_MAX );
       put_pixel(x, y, color );
     }
