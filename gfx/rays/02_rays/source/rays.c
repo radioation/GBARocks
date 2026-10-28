@@ -5,7 +5,7 @@
 
 
 sphere spheres[] = {
-  { .center = {0,-1,1}, .radius = 1.0, .color = RGB5(31,0,0 )},
+  { .center = {0,-1,3}, .radius = 1.0, .color = RGB5(31,0,0 )},
   { .center = {2, 0, 4}, .radius = 1.0, .color = RGB5(0,0,31 )},
   { .center = {-2,0, 4}, .radius = 1.0, .color = RGB5(0,31,0 )},
 };
