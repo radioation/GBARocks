@@ -2,7 +2,9 @@
 THese are just some code written while reading 'Computer Graphics from Scratch' 
 by Gabriel Gambetta. 
 
-This is a learning exercise and I'm largely not bothering with efficiency.
+This is a learning exercise and I'm largely not bothering with efficiency. I also
+don't plan on doing everything in the book. Just enough to get a feel for how
+things work.
 
 # coordinates
 

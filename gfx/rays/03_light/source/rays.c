@@ -11,8 +11,11 @@ void init_scene() {
   scene.spheres[1] = (Sphere){ .center = {2, 0, 4}, .radius = 1.0, .color = RGB5(0,0,31 ), .specular = 500};
   scene.spheres[2] = (Sphere) { .center = {-2,0, 4}, .radius = 1.0, .color = RGB5(0,31,0 ), .specular = 10};
   scene.spheres[3] = (Sphere) { .center = {0, -5001, 0}, .radius = 5000, .color = RGB5(31,31,0 ), .specular = 1000};
+
   scene.lights[0] = (Light) { .type = AMBIENT, .intensity = 0.2, {} };
+
   scene.lights[1] = (Light) { .type = POINT, .intensity = 0.6, .position = (Vec3) { 2,1,0 }, .direction = {} };
+
   scene.lights[2] = (Light) { .type = DIRECTIONAL, .intensity = 0.2, .position = {},  .direction = (Vec3) {1,4,4}};
 };
 
@@ -76,7 +79,7 @@ float compute_lighting( Vec3 P, Vec3 N, Vec3 V, int16_t s ){
       i += scene.lights[j].intensity;
     } else {
       Vec3 L;
-      if( scene.lights[j].type == AMBIENT ) {
+      if( scene.lights[j].type == POINT ) {
         L = subtract( scene.lights[j].position, P );
       }else {
         L =scene.lights[j].direction;
