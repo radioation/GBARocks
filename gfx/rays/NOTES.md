@@ -1,6 +1,6 @@
 # About.
 THese are just some code written while reading 'Computer Graphics from Scratch' 
-by Gabriel Gambetta. 
+by Gabriel Gambetta.  Forumlas don't look great in txt/md docs, so read the book.
 
 This is a learning exercise and I'm largely not bothering with efficiency. I also
 don't plan on doing everything in the book. Just enough to get a feel for how
@@ -70,7 +70,7 @@ this can be rewritten as
 `<P-C, P-C> = r^2`  (see the book, will do actual long-winded on paper)
 
 
-we basically want to find the interseciton of the ray with the sphere. 
+we basically want to find the intersection of the ray with the sphere. 
 We don't have to plug in every possible t and match the result up with 
 the sphere equation, we just use the discriminant. (again, see book)
 ```txt
@@ -86,5 +86,38 @@ at^2 + bt + c = 0
 so solve for `{t1, t2} = (-b + sqrt( b^2 - 4ac) / 2a`
 
 
+# Light
+## Types
+No surprises here:
+* Ambient: all around
+* Point: like a light bulb
+* Directional: like the sun
+
+These are added up.  Ambient has no direction, so it's a constant.
+
+The intensitiy of Point and Directional lighting will vary depending on the
+direction relative to the  surface of scene objects
+
+
+## Diffuse (Matte)
+The fraction of light that is reflected is a function of the angle between the
+spurface normal(N) and the direction of light (L). This refleciton is equal
+in every direction.
+
+This gets added to the ambient intensity.
+
+## Specular (Everything's Shiny Cap'n)
+For a  perfect mirror the ray light (L) gets reflected in a *single* direction(R). 
+
+Less-than-perfect polish means less light will be reflectin in direction R, and
+some of it will reflect in directions *close to* R. 
+Shiny ness determines how rapidly the reflected light decreases as you move
+away from R
+
+*IMP* R is derived from the surface normal N and the light direction L
+*IMP* the amount of light we see is related to how close R is to our Viewing Angle (V)
+
+
+This also gets added to the ambient intensity.
 
 

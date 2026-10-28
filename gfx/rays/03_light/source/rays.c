@@ -78,7 +78,8 @@ float compute_lighting( Vec3 P, Vec3 N, Vec3 V, int16_t s ){
     if( scene.lights[j].type == AMBIENT ) {
       i += scene.lights[j].intensity;
     } else {
-      Vec3 L;
+
+      Vec3 L; // Direction of Light
       if( scene.lights[j].type == POINT ) {
         L = subtract( scene.lights[j].position, P );
       }else {
@@ -92,9 +93,12 @@ float compute_lighting( Vec3 P, Vec3 N, Vec3 V, int16_t s ){
 
       // COMPUTE SPECULAR
       if ( s != -1 ) {
+        // R (reflection) is derived from the light direction *and* surface Normal
         Vec3 R = mul( N, 2 );
         R = mul( R, dot( N, L ));
         R = subtract( R, L );
+
+        // the amount we see is depends on our viewing angle V
         float r_dot_v = dot(R, V );
         if ( r_dot_v > 0) {
           i += scene.lights[j].intensity * pow( r_dot_v / ( length(R) * length(V)), s );
