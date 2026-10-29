@@ -3,7 +3,8 @@ More code based on reading 'Computer Graphics from Scratch' by Gabriel Gambetta.
 This time the rasterization chapters. Chapters 6-8 cover things I think 
 I remember pretty well.
 
-## Lines/Triangles
+# Lines/Triangles
+## Lines
 They spent two pages deriving y=mx+b from two 2D points. 
 * Book uses: `y = ax + b` where a is the slope (rise over run) instead of m.
   * rise over run does run into a problem when run == 0
@@ -32,5 +33,10 @@ They spent two pages deriving y=mx+b from two 2D points.
  The interpolate function returns an array of dependent float/real for each
  x (or y) integer (pixel location).
 
+
+## Wireframe Triangles
+This is easy, just call DrawLines for each side. Nothing to learn here.
+
+## Filled Triangles
 
  

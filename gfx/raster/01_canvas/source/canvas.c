@@ -70,6 +70,13 @@ void draw_line( Point2 p0, Point2 p1, uint16_t color ) {
 }
 
 
+void draw_wireframe_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t color )
+{
+  draw_line( p0, p1, color );
+  draw_line( p1, p2, color );
+  draw_line( p2, p0, color );
+}
+
 
 
 

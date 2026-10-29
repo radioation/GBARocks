@@ -45,13 +45,20 @@ int main(void) {
     put_pixel( -110, -70, RGB5( 31, 0 ,0) );
 
     // Lower Right 
-    put_pixel( 110, -70, RGB5( 310, 31, 0) );
+    put_pixel( 110, -70, RGB5( 31, 31, 0) );
 
     // try out lines
     Point2 p0 = (Point2) { -CANVAS_WIDTH/2 + 20, -CANVAS_HEIGHT/2 + 20 };
     Point2 p1 = (Point2) { CANVAS_WIDTH/2 - 20, CANVAS_HEIGHT/2 -20};
 
     draw_line( p0, p1, RGB5( 31, 31, 31  ) );
+
+    // draw triangle
+     p0 = (Point2) { -60, -60 };
+    p1 = (Point2) { -10, -60 };
+    Point2 p2 = (Point2) { -10, -10 };
+    draw_wireframe_triangle( p0, p1, p2, RGB5( 31, 0, 31 ));
+
     while (1) {
         VBlankIntrWait();
     }
