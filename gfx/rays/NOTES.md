@@ -1,6 +1,7 @@
 # About.
-THese are just some code written while reading 'Computer Graphics from Scratch' 
-by Gabriel Gambetta.  Forumlas don't look great in txt/md docs, so read the book.
+These are just some code written while reading 'Computer Graphics from Scratch' 
+by Gabriel Gambetta.  Formulas don't look great in txt/md docs, it's best to read
+the book.
 
 This is a learning exercise and I'm largely not bothering with efficiency. I also
 don't plan on doing everything in the book. Just enough to get a feel for how
