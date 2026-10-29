@@ -23,5 +23,6 @@ void put_pixel(s16 canvas_x, s16 canvas_y, u16 color);
 int interpolate( int16_t i0, float d0, int16_t i1, float d1, float values[] );
 void draw_line( Point2 p0, Point2 p1, uint16_t color );
 void draw_wireframe_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t color );
+void draw_filled_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t color );
 
 #endif // _CANVAS_H_
