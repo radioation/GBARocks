@@ -29,4 +29,8 @@ They spent two pages deriving y=mx+b from two 2D points.
 
 *IMP* The two cases are basically the same and can be abstracted into a general
  interpolation function.
+ The interpolate function returns an array of dependent float/real for each
+ x (or y) integer (pixel location).
 
+
+ 

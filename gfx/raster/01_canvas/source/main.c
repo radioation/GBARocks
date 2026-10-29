@@ -47,6 +47,11 @@ int main(void) {
     // Lower Right 
     put_pixel( 110, -70, RGB5( 310, 31, 0) );
 
+    // try out lines
+    Point2 p0 = (Point2) { -CANVAS_WIDTH/2 + 20, -CANVAS_HEIGHT/2 + 20 };
+    Point2 p1 = (Point2) { CANVAS_WIDTH/2 - 20, CANVAS_HEIGHT/2 -20};
+
+    draw_line( p0, p1, RGB5( 31, 31, 31  ) );
     while (1) {
         VBlankIntrWait();
     }
