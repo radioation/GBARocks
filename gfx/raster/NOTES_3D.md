@@ -99,6 +99,50 @@ so basicaly
 *IMP* Translation must be done last, because you usually want to rotate and 
  scale around the ORIGIN in model space
 
- 
+### Camera Transform
+* The relative motion of the camera vs objects in the scene are identical. There's 
+  no difference between moving the camera in a fixed scene vs fixing the camera
+  and moving the scene around it.
+
+*IMP* we can render the scene from the point of view of th camera by applying 
+ the _opposite_ transforms to each vertex of the scene.
+
+ `V_translated = V_scene - camera.translation`
+ `V_cam_space = inverse( camera.translation) * V_translated`
+ `V_projected = perspective_project( V_cam_space )`
+
+
+### Transform Matrix
+1. Model Transform : move from model space to world cpace 
+  `V_model_scaled = instance.scale * V_model` 
+  `V_model_rotated = instance.rotation * V_model_scaled` 
+  `V_world = V_model_rotated + instace.translation` 
+
+2. Camera Transform : move from world space to camera space 
+  `V_translated = V_world - camera.translation`
+  `V_camera = inverse( camera.rotation) * V_translated`
+
+3. Perspective equations: get to viewport coordinates
+  `v_x = V_camera_x * d / V_camera_z`
+  `v_y = V_camera_y * d / V_camera_z`
+
+4. Canvas equations: viewport coordinates
+  `c_x = v_x * c_w / v_w`
+  `c_y = v_y * c_h/ v_h`
+
+he goes on to show the usfulness of Homogeneous coordinates.
+* Homogeneous Rotation Matrix
+* Homogeneous Scale Matrix
+* Homogeneous Translation Matrix
+* Homogeneous Projection Matrix
+* Homogeneous Viewport-to-Canvas Matrix
+As matrices we can combine them by multiplying the mall together. What we need though are at least 
+`M_projection` - rarly changes. Depdns on viewport and canvas size.
+  *IMP*He doesn't use the full projection matrix in the rest of the book. THis lets
+  him perform more operations in 3D that can't be expressed as matrix transforms before
+  projecting the points.
+`M_Camera` - changes every time the camera position/orientation changes.
+`M_Model` - different for every instance in a scen. Remains constatnt for instances
+  that don't move/rotate.
 
 
