@@ -56,7 +56,7 @@ if y2 < y1 { swap(p2, p1) }
 *IMP* This simplifies the function as we can always assume p0 is the lowest
   point of the triangle and p2 is the highest. p0 to p2 will be the Tall side
   of the triangle.
-*IMP* interpolate is used to get the X correspobding to the y's of each 
+*IMP* interpolate is used to get the X corresponding to the y's of each 
  line segment. We'll either use the Tall Side to find the right X values
  or combine the two shorter to find the right X values. Left X will
  come from the other.
@@ -68,7 +68,19 @@ x12[] = interpolate( y1, x1, y2, x2 )
 x02[] = interpolate( y0, x0, y2, x2 )
 ```
 *IMP* note that x01[] + x12[] will have one line of overlap.
-   they removethe last item from it and create 
+   they remove the last item from it and create 
    `x012[] = x0[:-1] + x12`
+
+## Shaded triangles
+Not particularly interesting to me, but it demonstrates the value of the `interpolate()` function.
+By assigning an intensity (I'm using z in my Vec3 here instead of making a new point type), 
+interpolate can be used to
+1. calculate an intensity gradient along the edges of the triangle based on the points. 
+2. calculate an intensity gradient along the horizontal line filling the triangle based on the 
+   intensity of the left and right edges for the current Y 
+
+I could see this being extended some what for R/G/B values at the points as well. Not that 
+I'll bother. I'm more interested in either 3D wireframe (for older retro) and textured polygons 
+on GBA
 
 

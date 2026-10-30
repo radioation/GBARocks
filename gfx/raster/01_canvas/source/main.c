@@ -76,6 +76,10 @@ int main(void) {
   draw_line( p1, p2, RGB5( 0,0,31 ));
   draw_line( p0, p2, RGB5( 31,0,0 ));
   
+  Vec3 ph0 = (Vec3) { -10, 10, 1.3 };
+  Vec3 ph1 = (Vec3) { -60, 60, 0.5 };
+  Vec3 ph2 = (Vec3) { -10, 60, 0.0 };
+  draw_shaded_triangle( ph0, ph1, ph2, RGB5( 0, 15, 15 ));
   while (1) {
     VBlankIntrWait();
   }
