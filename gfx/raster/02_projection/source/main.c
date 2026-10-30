@@ -42,23 +42,23 @@ int main(void) {
   Vec3 vCb = (Vec3) {   1.5, -1.0, 6.0 };
   Vec3 vDb = (Vec3) {  -0.5, -1.0, 6.0 };
 
-  // draw front face
-  draw_line( project_vertex( vAf ), project_vertex( vBf ), RGB5(0,0,31) );
-  draw_line( project_vertex( vBf ), project_vertex( vCf ), RGB5(0,0,31) );
-  draw_line( project_vertex( vCf ), project_vertex( vDf ), RGB5(0,0,31) );
-  draw_line( project_vertex( vDf ), project_vertex( vAf ), RGB5(0,0,31) );
-
   // draw back face
   draw_line( project_vertex( vAb ), project_vertex( vBb ), RGB5(31,0,0) );
   draw_line( project_vertex( vBb ), project_vertex( vCb ), RGB5(31,0,0) );
   draw_line( project_vertex( vCb ), project_vertex( vDb ), RGB5(31,0,0) );
   draw_line( project_vertex( vDb ), project_vertex( vAb ), RGB5(31,0,0) );
 
-  // draw back face
+  // draw edges
   draw_line( project_vertex( vAf ), project_vertex( vAb ), RGB5(0,31,0) );
   draw_line( project_vertex( vBf ), project_vertex( vBb ), RGB5(0,31,0) );
   draw_line( project_vertex( vCf ), project_vertex( vCb ), RGB5(0,31,0) );
   draw_line( project_vertex( vDf ), project_vertex( vDb ), RGB5(0,31,0) );
+
+  // draw front face
+  draw_line( project_vertex( vAf ), project_vertex( vBf ), RGB5(0,0,31) );
+  draw_line( project_vertex( vBf ), project_vertex( vCf ), RGB5(0,0,31) );
+  draw_line( project_vertex( vCf ), project_vertex( vDf ), RGB5(0,0,31) );
+  draw_line( project_vertex( vDf ), project_vertex( vAf ), RGB5(0,0,31) );
 
   // front verticies
   vAf = (Vec3) { -2.0, -0.5, 5.0 };
@@ -72,23 +72,24 @@ int main(void) {
   vCb = (Vec3) { -1.0,  0.5, 6.0 };
   vDb = (Vec3) { -1.0, -0.5, 6.0 };
 
-  // draw front face
-  draw_line( project_vertex( vAf ), project_vertex( vBf ), RGB5(0,0,31) );
-  draw_line( project_vertex( vBf ), project_vertex( vCf ), RGB5(0,0,31) );
-  draw_line( project_vertex( vCf ), project_vertex( vDf ), RGB5(0,0,31) );
-  draw_line( project_vertex( vDf ), project_vertex( vAf ), RGB5(0,0,31) );
-
   // draw back face
   draw_line( project_vertex( vAb ), project_vertex( vBb ), RGB5(31,0,0) );
   draw_line( project_vertex( vBb ), project_vertex( vCb ), RGB5(31,0,0) );
   draw_line( project_vertex( vCb ), project_vertex( vDb ), RGB5(31,0,0) );
   draw_line( project_vertex( vDb ), project_vertex( vAb ), RGB5(31,0,0) );
 
-  // draw back face
+  // draw edges
   draw_line( project_vertex( vAf ), project_vertex( vAb ), RGB5(0,31,0) );
   draw_line( project_vertex( vBf ), project_vertex( vBb ), RGB5(0,31,0) );
   draw_line( project_vertex( vCf ), project_vertex( vCb ), RGB5(0,31,0) );
   draw_line( project_vertex( vDf ), project_vertex( vDb ), RGB5(0,31,0) );
+
+  // draw front face
+  draw_line( project_vertex( vAf ), project_vertex( vBf ), RGB5(0,0,31) );
+  draw_line( project_vertex( vBf ), project_vertex( vCf ), RGB5(0,0,31) );
+  draw_line( project_vertex( vCf ), project_vertex( vDf ), RGB5(0,0,31) );
+  draw_line( project_vertex( vDf ), project_vertex( vAf ), RGB5(0,0,31) );
+
   while (1) {
     VBlankIntrWait();
   }
