@@ -10,6 +10,10 @@ Vec3 subtract3( Vec3 a,Vec3  b ) {
   return (Vec3){a.x - b.x, a.y - b.y, a.z - b.z};
 }
 
+Vec3 mul3( Vec3 a, float v ) {
+  return (Vec3){a.x *v, a.y *v, a.z *v};
+}
+
 Vec3 cross3( Vec3 a, Vec3 b ) {
   Vec3 retvec;
   retvec.x = a.y*b.z - a.z*b.y;
@@ -47,6 +51,15 @@ void mat4fXmat4f( float *a, float *b, float *retmat ){
   retmat[14] = a[12]*b[2] + a[13]*b[6] + a[14]*b[10] + a[15]*b[14];
   retmat[15] = a[12]*b[3] + a[13]*b[7] + a[14]*b[11] + a[15]*b[15];
 
+}
+
+Vec4 mat4fXvec4f( float *a, Vec4 b ){
+
+  Vec4 retvec;
+  retvec.x = a[ 0] * b.x + a[ 1] * b.y + a[ 2] * b.z + a[ 3] * b.w ;
+  retvec.y = a[ 4] * b.x + a[ 5] * b.y + a[ 6] * b.z + a[ 7] * b.w ;
+  retvec.z = a[ 8] * b.x + a[ 9] * b.y + a[10] * b.z + a[11] * b.w ;
+  retvec.w = a[12] * b.x + a[13] * b.y + a[14] * b.z + a[15] * b.w ;
 }
 
 

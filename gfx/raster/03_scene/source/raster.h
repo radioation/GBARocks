@@ -17,15 +17,16 @@ typedef struct {
 } Triangle;
 
 typedef struct {
-  Vec4 *vertices;
+  Vec3 *vertices;
   Triangle *triangles;
 } Model;
 
 typedef struct{
-  Model model;
-  Vec4 position;
-  Vec4 orientation;
+  Model *model;
+  Vec3 position;
+  float orientation[16];
   float scale;
+  float transform[16];
 } Instance;
 
 typedef struct {
@@ -38,7 +39,10 @@ void get_scaling_matrix( float s, float *mat );
 void get_x_rotation_matrix( float s, float *mat );
 void get_y_rotation_matrix( float s, float *mat );
 void get_z_rotation_matrix( float s, float *mat );
+void get_identity_matrix( float *mat );
+void get_transpose_matrix( float *in, float* transpose  );
 
+void get_instance_transform( Instance* inst );
 
 Point2 viewport_to_canvas( float x, float y );
 Point2 project_vertex( Vec3 v );

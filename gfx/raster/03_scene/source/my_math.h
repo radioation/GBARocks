@@ -26,9 +26,11 @@ typedef struct {
 float dot3( Vec3 a, Vec3 b );
 Vec3 add3( Vec3 a, Vec3 b );
 Vec3 subtract3( Vec3 a,Vec3  b );
+Vec3 mul3( Vec3 a, float v );
 Vec3 cross3( Vec3 a, Vec3 b );
 
 void mat4fXmat4f( float *a, float *b, float *retmat );
+Vec4 mat4fXvec4f( float *a, Vec4 v );
 void transposeMat4f( float* a, float *retmat );
 
 Vec4 add4( Vec4 a, Vec4 b );

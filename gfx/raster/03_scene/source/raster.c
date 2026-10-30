@@ -44,6 +44,35 @@ void get_z_rotation_matrix( float degrees, float *mat ) {
   mat[ 4]= 0.0; mat[ 5] = 0.0; mat[ 6] = 0.0; mat[ 7] = 1.0;
 }
 
+void get_identity_matrix(  float *mat ) {
+  mat[ 0]= 1.0; mat[ 1] = 0.0; mat[ 2] = 0.0; mat[ 3] = 0.0;
+  mat[ 4]= 0.0; mat[ 5] = 1.0; mat[ 6] = 0.0; mat[ 7] = 0.0;
+  mat[ 4]= 0.0; mat[ 5] = 0.0; mat[ 6] = 1.0; mat[ 7] = 0.0;
+  mat[ 4]= 0.0; mat[ 5] = 0.0; mat[ 6] = 0.0; mat[ 7] = 1.0;
+}
+
+void get_transpose_matrix(  float *mat, float* transpose ) {
+      for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            // matrix[i][j]      -> matrix[i * 4 + j]
+            // transpose[j][i]   -> transpose[j * 4 + i]
+            transpose[j * 4 + i] = mat[i * 4 + j];
+        }
+    }
+}
+
+void get_instance_transform( Instance* inst ) {
+//  MultiplyMM4(
+//      MakeTranslationMatrix(this.position), 
+//      MultiplyMM4(this.orientation, MakeScalingMatrix(this.scale))
+//
+//      );
+  float scale[16];
+  float temp[16];
+  get_scaling_matrix( inst->scale, scale );
+  mat4fXmat4f( inst->orientation, scale );
+   
+}
 
 
 Point2 viewport_to_canvas( float x, float y ) {
