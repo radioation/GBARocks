@@ -19,6 +19,8 @@ typedef struct {
 typedef struct {
   Vec3 *vertices;
   Triangle *triangles;
+  int num_verticies;
+  int num_triangles;
 } Model;
 
 typedef struct{
@@ -46,6 +48,7 @@ void get_instance_transform( Instance* inst );
 
 Point2 viewport_to_canvas( float x, float y );
 Point2 project_vertex( Vec3 v );
+Point2 project_vertex4( Vec4 v );
 
 
 

@@ -70,8 +70,11 @@ void get_instance_transform( Instance* inst ) {
   float scale[16];
   float temp[16];
   get_scaling_matrix( inst->scale, scale );
-  mat4fXmat4f( inst->orientation, scale );
-   
+  mat4fXmat4f( inst->orientation, scale, temp );
+  float transmat[16];
+  get_translation_matrix( inst->position, transmat );
+  mat4fXmat4f(transmat, temp, inst->transform );
+
 }
 
 
@@ -81,6 +84,10 @@ Point2 viewport_to_canvas( float x, float y ) {
 
 
 Point2 project_vertex( Vec3 v ) {
+  return viewport_to_canvas( v.x * (float)VIEW_DISTANCE / v.z, v.y * (float)VIEW_DISTANCE / v.z );
+}
+
+Point2 project_vertex4( Vec4 v ) {
   return viewport_to_canvas( v.x * (float)VIEW_DISTANCE / v.z, v.y * (float)VIEW_DISTANCE / v.z );
 }
 

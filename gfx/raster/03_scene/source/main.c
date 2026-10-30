@@ -31,7 +31,7 @@ int main(void) {
   // is required
   irqInit();
   irqEnable(IRQ_VBLANK);
-  
+
 
   // 
   SetMode( MODE_3 | BG2_ON );
@@ -49,28 +49,30 @@ int main(void) {
   };
 
   Triangle triangles[] = {
-  {0, 1, 2, RED},
-  {0, 2, 3, RED},
-  {4, 0, 3, GREEN},
-  {4, 3, 7, GREEN},
-  {5, 4, 7, BLUE},
-  {5, 7, 6, BLUE},
-  {1, 5, 6, YELLOW},
-  {1, 6, 2, YELLOW},
-  {4, 5, 1, PURPLE},
-  {4, 1, 0, PURPLE},
-  {2, 6, 7, CYAN},
-  {2, 7, 3, CYAN}
+    {0, 1, 2, RED},
+    {0, 2, 3, RED},
+    {4, 0, 3, GREEN},
+    {4, 3, 7, GREEN},
+    {5, 4, 7, BLUE},
+    {5, 7, 6, BLUE},
+    {1, 5, 6, YELLOW},
+    {1, 6, 2, YELLOW},
+    {4, 5, 1, PURPLE},
+    {4, 1, 0, PURPLE},
+    {2, 6, 7, CYAN},
+    {2, 7, 3, CYAN}
   };
-  Model cube = { verticies, triangles};
+  Model cube = { verticies, triangles, 8, 12};
 
   // setup instances.
   Instance instances[] = {
-    { &cube, { -1.5, 0.0, 7.0}, {0 }, 0.75 },
-    { &cube, { 1.25, 2.5, 7.5}, {0 }, 1.25 },
+    { &cube, { -1.5, 0.0, 7.0}, {0 }, 0.75, {} },
+    { &cube, { 1.25, 2.5, 7.5}, {0 }, 1.25, {} },
   };
   get_identity_matrix( instances[0].orientation);
+  get_instance_transform( &instances[0] );
   get_y_rotation_matrix( 195, instances[1].orientation);
+  get_instance_transform( &instances[1] );
 
 
   // setup camera
@@ -88,33 +90,33 @@ int main(void) {
   get_transpose_matrix( cam.orientation, camera_orientation_t );
   float camera_matrix[16];
   mat4fXmat4f( camera_orientation_t, camera_translation, camera_matrix );
- 
+
 
   // iter instances
   for( int i=0; i < 2; ++i ) {
     // render
     float transform[16];
-    mat4fXmat4f( camera_matrix,instance[i].transform,  transform );
+    mat4fXmat4f( camera_matrix,instances[i].transform,  transform );
     //  render vertices
     Point2 projected[ 512]; // figure this out.
     size_t curr_p = 0;
-    for( int j=0; j < instance[i].model->num_verticies; ++j ) {
+    for( int j=0; j < instances[i].model->num_verticies; ++j ) {
       Vec4 vertH ;
-      vertH.x = instance[i].model->vertices[j].x;
-      vertH.y = instance[i].model->vertices[j].y;
-      vertH.z = instance[i].model->vertices[j].z;
+      vertH.x = instances[i].model->vertices[j].x;
+      vertH.y = instances[i].model->vertices[j].y;
+      vertH.z = instances[i].model->vertices[j].z;
       vertH.w = 1.0;
-      Vec4 vert = mat4fXvec4f( instance[i].model.transform, vertH );
-      projected[curr_p] = project_vert3ex( v );
+      Vec4 vert = mat4fXvec4f( instances[i].transform, vertH );
+      projected[curr_p] = project_vertex4( vert );
       curr_p ++;
     }
-    for( int j=0; j < instance[i].model->num_triangles; ++j ) {
+    for( int j=0; j < instances[i].model->num_triangles; ++j ) {
       // render triangle
       draw_wireframe_triangle(
-          projected[ instance[i].model->triangles[j].v0 ],
-          projected[ instance[i].model->triangles[j].v1 ],
-          projected[ instance[i].model->triangles[j].v22],
-          instance[i].model->triangles[j].color ,
+          projected[ instances[i].model->triangles[j].v0 ],
+          projected[ instances[i].model->triangles[j].v1 ],
+          projected[ instances[i].model->triangles[j].v2],
+          instances[i].model->triangles[j].color
           );
     }
 
