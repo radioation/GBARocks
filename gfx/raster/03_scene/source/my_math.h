@@ -12,13 +12,27 @@ typedef struct {
 typedef struct {
   float x;
   float y;
+  float z;
+  float w;
+} Vec4;
+
+typedef struct {
+  float x;
+  float y;
+  float h; // 
 } Point2;
 
 
+float dot3( Vec3 a, Vec3 b );
+Vec3 add3( Vec3 a, Vec3 b );
+Vec3 subtract3( Vec3 a,Vec3  b );
+Vec3 cross3( Vec3 a, Vec3 b );
 
-float dot( Vec3 a, Vec3 b );
-Vec3 add( Vec3 a, Vec3 b );
-Vec3 subtract( Vec3 a,Vec3  b );
-//float cross( float *a, float *b );
+void mat4fXmat4f( float *a, float *b, float *retmat );
+void transposeMat4f( float* a, float *retmat );
+
+Vec4 add4( Vec4 a, Vec4 b );
+Vec4 subtract4( Vec4 a,Vec4  b );
+
 
 #endif // _MY_MATH_H_

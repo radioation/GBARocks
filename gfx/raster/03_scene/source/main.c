@@ -30,66 +30,24 @@ int main(void) {
   // 
   SetMode( MODE_3 | BG2_ON );
 
-  // front verticies
-  Vec3 vAf = (Vec3) { -0.5,  1.0, 5.0 };
-  Vec3 vBf = (Vec3) {  1.5,  1.0, 5.0 };
-  Vec3 vCf = (Vec3) {  1.5, -1.0, 5.0 };
-  Vec3 vDf = (Vec3) { -0.5, -1.0, 5.0 };
+  // let camera = new Camera(new Vertex(-3, 1, 2), MakeOYRotationMatrix(-30));
+  float degrees = -30.0f;
+  Camera cam;
+  cam.position = (Vec3) { -3, 1, 2 };
+  get_y_rotation_matrix( degrees, cam.orientation );
 
-  // back verticies
-  Vec3 vAb = (Vec3) {  -0.5,  1.0, 6.0 };
-  Vec3 vBb = (Vec3) {   1.5,  1.0, 6.0 };
-  Vec3 vCb = (Vec3) {   1.5, -1.0, 6.0 };
-  Vec3 vDb = (Vec3) {  -0.5, -1.0, 6.0 };
 
-  // draw back face
-  draw_line( project_vertex( vAb ), project_vertex( vBb ), RGB5(31,0,0) );
-  draw_line( project_vertex( vBb ), project_vertex( vCb ), RGB5(31,0,0) );
-  draw_line( project_vertex( vCb ), project_vertex( vDb ), RGB5(31,0,0) );
-  draw_line( project_vertex( vDb ), project_vertex( vAb ), RGB5(31,0,0) );
+  // 1. model transform, move from model space to world space
 
-  // draw edges
-  draw_line( project_vertex( vAf ), project_vertex( vAb ), RGB5(0,31,0) );
-  draw_line( project_vertex( vBf ), project_vertex( vBb ), RGB5(0,31,0) );
-  draw_line( project_vertex( vCf ), project_vertex( vCb ), RGB5(0,31,0) );
-  draw_line( project_vertex( vDf ), project_vertex( vDb ), RGB5(0,31,0) );
 
-  // draw front face
-  draw_line( project_vertex( vAf ), project_vertex( vBf ), RGB5(0,0,31) );
-  draw_line( project_vertex( vBf ), project_vertex( vCf ), RGB5(0,0,31) );
-  draw_line( project_vertex( vCf ), project_vertex( vDf ), RGB5(0,0,31) );
-  draw_line( project_vertex( vDf ), project_vertex( vAf ), RGB5(0,0,31) );
+  // 2 Camera Transform
 
-  // front verticies
-  vAf = (Vec3) { -2.0, -0.5, 5.0 };
-  vBf = (Vec3) { -2.0,  0.5, 5.0 };
-  vCf = (Vec3) { -1.0,  0.5, 5.0 };
-  vDf = (Vec3) { -1.0, -0.5, 5.0 };
 
-  // back verticies
-  vAb = (Vec3) { -2.0, -0.5, 6.0 };
-  vBb = (Vec3) { -2.0,  0.5, 6.0 };
-  vCb = (Vec3) { -1.0,  0.5, 6.0 };
-  vDb = (Vec3) { -1.0, -0.5, 6.0 };
 
-  // draw back face
-  draw_line( project_vertex( vAb ), project_vertex( vBb ), RGB5(31,0,0) );
-  draw_line( project_vertex( vBb ), project_vertex( vCb ), RGB5(31,0,0) );
-  draw_line( project_vertex( vCb ), project_vertex( vDb ), RGB5(31,0,0) );
-  draw_line( project_vertex( vDb ), project_vertex( vAb ), RGB5(31,0,0) );
+  // 3. Perspective 
 
-  // draw edges
-  draw_line( project_vertex( vAf ), project_vertex( vAb ), RGB5(0,31,0) );
-  draw_line( project_vertex( vBf ), project_vertex( vBb ), RGB5(0,31,0) );
-  draw_line( project_vertex( vCf ), project_vertex( vCb ), RGB5(0,31,0) );
-  draw_line( project_vertex( vDf ), project_vertex( vDb ), RGB5(0,31,0) );
-
-  // draw front face
-  draw_line( project_vertex( vAf ), project_vertex( vBf ), RGB5(0,0,31) );
-  draw_line( project_vertex( vBf ), project_vertex( vCf ), RGB5(0,0,31) );
-  draw_line( project_vertex( vCf ), project_vertex( vDf ), RGB5(0,0,31) );
-  draw_line( project_vertex( vDf ), project_vertex( vAf ), RGB5(0,0,31) );
-
+  // 4. Cavas
+ 
   while (1) {
     VBlankIntrWait();
   }
