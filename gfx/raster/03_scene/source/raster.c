@@ -5,50 +5,50 @@
 void get_translation_matrix( Vec3 t, float *mat ) {
   mat[ 0]= 1.0; mat[ 1] = 0.0; mat[ 2] = 0.0; mat[ 3] = t.x;
   mat[ 4]= 0.0; mat[ 5] = 1.0; mat[ 6] = 0.0; mat[ 7] = t.y;
-  mat[ 4]= 0.0; mat[ 5] = 0.0; mat[ 6] = 1.0; mat[ 7] = t.z;
-  mat[ 4]= 0.0; mat[ 5] = 0.0; mat[ 6] = 0.0; mat[ 7] = 1.0;
+  mat[ 8]= 0.0; mat[ 9] = 0.0; mat[10] = 1.0; mat[11] = t.z;
+  mat[12]= 0.0; mat[13] = 0.0; mat[14] = 0.0; mat[15] = 1.0;
 }
 
 void get_scaling_matrix( float  s, float *mat ) {
-  mat[ 0]=   s; mat[ 1] = 0.0; mat[ 2] = 0.0; mat[ 3] = 0.0;
-  mat[ 4]= 0.0; mat[ 5] =   s; mat[ 6] = 0.0; mat[ 7] = 0.0;
-  mat[ 4]= 0.0; mat[ 5] = 0.0; mat[ 6] =   s; mat[ 7] = 0.0;
-  mat[ 4]= 0.0; mat[ 5] = 0.0; mat[ 6] = 0.0; mat[ 7] = 1.0;
+  mat[  0]=   s; mat[  1] = 0.0; mat[ 2] = 0.0; mat[ 3] = 0.0;
+  mat[  4]= 0.0; mat[  5] =   s; mat[ 6] = 0.0; mat[ 7] = 0.0;
+  mat[  8]= 0.0; mat[  9] = 0.0; mat[10] =   s; mat[11] = 0.0;
+  mat[ 12]= 0.0; mat[ 13] = 0.0; mat[14] = 0.0; mat[15] = 1.0;
 }
 
 void get_x_rotation_matrix( float degrees, float *mat ) {
   float c = cos( degrees * M_PI / 180.0 );
   float s = sin( degrees * M_PI / 180.0 );
-  mat[ 0]= 1.0; mat[ 1] = 0.0; mat[ 2] = 0.0; mat[ 3] = 0.0;
-  mat[ 4]= 0.0; mat[ 5] =   c; mat[ 6] =  -s; mat[ 7] = 0.0;
-  mat[ 4]= 0.0; mat[ 5] =   s; mat[ 6] =   c; mat[ 7] = 0.0;
-  mat[ 4]= 0.0; mat[ 5] = 0.0; mat[ 6] = 0.0; mat[ 7] = 1.0;
+  mat[  0]= 1.0; mat[ 1] = 0.0; mat[ 2] = 0.0; mat[ 3] = 0.0;
+  mat[  4]= 0.0; mat[ 5] =   c; mat[ 6] =  -s; mat[ 7] = 0.0;
+  mat[  8]= 0.0; mat[ 9] =   s; mat[10] =   c; mat[11] = 0.0;
+  mat[ 12]= 0.0; mat[13] = 0.0; mat[14] = 0.0; mat[15] = 1.0;
 }
 
 void get_y_rotation_matrix( float degrees, float *mat ) {
   float c = cos( degrees * M_PI / 180.0 );
   float s = sin( degrees * M_PI / 180.0 );
-  mat[ 0]=   c; mat[ 1] = 0.0; mat[ 2] =  -s; mat[ 3] = 0.0;
-  mat[ 4]= 0.0; mat[ 5] = 1.0; mat[ 6] = 0.0; mat[ 7] = 0.0;
-  mat[ 4]=   s; mat[ 5] = 0.0; mat[ 6] =   s; mat[ 7] = 0.0;
-  mat[ 4]= 0.0; mat[ 5] = 0.0; mat[ 6] = 0.0; mat[ 7] = 1.0;
+  mat[  0]=   c; mat[ 1] = 0.0; mat[ 2] =   s; mat[ 3] = 0.0;
+  mat[  4]= 0.0; mat[ 5] = 1.0; mat[ 6] = 0.0; mat[ 7] = 0.0;
+  mat[  8]=  -s; mat[ 9] = 0.0; mat[10] =   c; mat[11] = 0.0;
+  mat[ 12]= 0.0; mat[13] = 0.0; mat[14] = 0.0; mat[15] = 1.0;
 }
 
 
 void get_z_rotation_matrix( float degrees, float *mat ) {
   float c = cos( degrees * M_PI / 180.0 );
   float s = sin( degrees * M_PI / 180.0 );
-  mat[ 0]=   c; mat[ 1] =  -s; mat[ 2] = 0.0; mat[ 3] = 0.0;
-  mat[ 4]=   s; mat[ 5] =   c; mat[ 6] = 0.0; mat[ 7] = 0.0;
-  mat[ 4]= 0.0; mat[ 5] = 0.0; mat[ 6] = 1.0; mat[ 7] = 0.0;
-  mat[ 4]= 0.0; mat[ 5] = 0.0; mat[ 6] = 0.0; mat[ 7] = 1.0;
+  mat[  0]=   c; mat[ 1] =  -s; mat[ 2] = 0.0; mat[ 3] = 0.0;
+  mat[  4]=   s; mat[ 5] =   c; mat[ 6] = 0.0; mat[ 7] = 0.0;
+  mat[  8]= 0.0; mat[ 9] = 0.0; mat[10] = 1.0; mat[11] = 0.0;
+  mat[ 12]= 0.0; mat[13] = 0.0; mat[14] = 0.0; mat[15] = 1.0;
 }
 
 void get_identity_matrix(  float *mat ) {
-  mat[ 0]= 1.0; mat[ 1] = 0.0; mat[ 2] = 0.0; mat[ 3] = 0.0;
-  mat[ 4]= 0.0; mat[ 5] = 1.0; mat[ 6] = 0.0; mat[ 7] = 0.0;
-  mat[ 4]= 0.0; mat[ 5] = 0.0; mat[ 6] = 1.0; mat[ 7] = 0.0;
-  mat[ 4]= 0.0; mat[ 5] = 0.0; mat[ 6] = 0.0; mat[ 7] = 1.0;
+  mat[  0]= 1.0; mat[ 1] = 0.0; mat[ 2] = 0.0; mat[ 3] = 0.0;
+  mat[  4]= 0.0; mat[ 5] = 1.0; mat[ 6] = 0.0; mat[ 7] = 0.0;
+  mat[  8]= 0.0; mat[ 9] = 0.0; mat[10] = 1.0; mat[11] = 0.0;
+  mat[ 12]= 0.0; mat[13] = 0.0; mat[14] = 0.0; mat[15] = 1.0;
 }
 
 void get_transpose_matrix(  float *mat, float* transpose ) {
