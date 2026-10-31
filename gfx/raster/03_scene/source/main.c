@@ -67,19 +67,21 @@ int main(void) {
   // setup instances.
   Instance instances[] = {
     { &cube, { -1.5, 0.0, 7.0}, {0 }, 0.75, {} },
-    { &cube, { 1.25, 2.5, 7.5}, {0 }, 1.25, {} },
+    //{ &cube, { 0, 0, 7.5}, {0 }, 0.75, {} },
+    { &cube, { 1, 1, 7.5}, {0 }, 1.00, {} },
+    
   };
   get_identity_matrix( instances[0].orientation);
   get_instance_transform( &instances[0] );
-  get_y_rotation_matrix( 195, instances[1].orientation);
+  //get_identity_matrix( instances[1].orientation);
+  get_y_rotation_matrix( 45, instances[1].orientation);
   get_instance_transform( &instances[1] );
 
 
   // setup camera
-  // let camera = new Camera(new Vertex(-3, 1, 2), MakeOYRotationMatrix(-30));
-  float degrees = -30.0f;
+  float degrees = 10.0f;
   Camera cam;
-  cam.position = (Vec3) { -3, 1, 2 };
+  cam.position = (Vec3) {-1, -2, -3 };
   get_y_rotation_matrix( degrees, cam.orientation );
 
 
@@ -106,7 +108,7 @@ int main(void) {
       vertH.y = instances[i].model->vertices[j].y;
       vertH.z = instances[i].model->vertices[j].z;
       vertH.w = 1.0;
-      Vec4 vert = mat4fXvec4f( instances[i].transform, vertH );
+      Vec4 vert = mat4fXvec4f( transform, vertH );
       projected[curr_p] = project_vertex4( vert );
       curr_p ++;
     }
