@@ -60,6 +60,7 @@ Vec4 mat4fXvec4f( float *a, Vec4 b ){
   retvec.y = a[ 4] * b.x + a[ 5] * b.y + a[ 6] * b.z + a[ 7] * b.w ;
   retvec.z = a[ 8] * b.x + a[ 9] * b.y + a[10] * b.z + a[11] * b.w ;
   retvec.w = a[12] * b.x + a[13] * b.y + a[14] * b.z + a[15] * b.w ;
+  return retvec;
 }
 
 
