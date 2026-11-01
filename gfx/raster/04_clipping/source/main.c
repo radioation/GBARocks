@@ -67,21 +67,21 @@ int main(void) {
   // setup instances.
   Instance instances[] = {
     { &cube, { -1.5, 0.0, 7.0}, {0 }, 0.75, {} },
-    //{ &cube, { 0, 0, 7.5}, {0 }, 0.75, {} },
-    { &cube, { 1, 1, 7.5}, {0 }, 1.00, {} },
+    { &cube, { 1.25, 2.5, 7.5}, {0 }, 1.00, {} },
+    //{ &cube, { 1.25, 2.5, 7.5}, {0 }, 1.00, {} },
     
   };
   get_identity_matrix( instances[0].orientation);
   get_instance_transform( &instances[0] );
   //get_identity_matrix( instances[1].orientation);
-  get_y_rotation_matrix( 45, instances[1].orientation);
+  get_y_rotation_matrix( 195, instances[1].orientation);
   get_instance_transform( &instances[1] );
 
 
   // setup camera
-  float degrees = 10.0f;
+  float degrees = -30.0f;
   Camera cam;
-  cam.position = (Vec3) {-1, -2, -3 };
+  cam.position = (Vec3) {-3, 1, 2 };
   get_y_rotation_matrix( degrees, cam.orientation );
 
 
@@ -100,7 +100,7 @@ int main(void) {
     float transform[16];
     mat4fXmat4f( camera_matrix,instances[i].transform,  transform );
     //  render vertices
-    Point2 projected[ 512]; // figure this out.
+    Point2 projected[16]; // figure this out.
     size_t curr_p = 0;
     for( int j=0; j < instances[i].model->num_verticies; ++j ) {
       Vec4 vertH ;
@@ -124,7 +124,7 @@ int main(void) {
 
   }
 
-
+ 
 
   while (1) {
     VBlankIntrWait();

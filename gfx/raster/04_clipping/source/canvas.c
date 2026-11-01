@@ -2,7 +2,7 @@
 #include <string.h>
 #include "canvas.h"
 
-static float vals[CANVAS_WIDTH];
+static float vals[512];
 
 volatile u16 *vram = (volatile u16 *)VRAM;  
 
@@ -40,7 +40,7 @@ int interpolate( int16_t i0, float d0, int16_t i1, float d1, float values[] ) {
 
   float a = (d1 - d0) /(float) (i1 -i0);
   float d = d0;
-  // convetion for thebook includes i1
+  // convention for the book includes i1
   for( int i= i0, j=0; i <= i1; ++i,++j) {
     count++;
     values[j] = d;
@@ -80,11 +80,11 @@ void draw_wireframe_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t color )
   draw_line( p2, p0, color );
 }
 
-static float x01[CANVAS_WIDTH];
-static float x12[CANVAS_WIDTH];
-static float x012[CANVAS_WIDTH];
+static float x01[512];
+static float x12[512];
+static float x012[512];
 
-static float x02[CANVAS_WIDTH];
+static float x02[512];
 void draw_filled_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t color )
 {
   // sort points
@@ -207,6 +207,7 @@ void draw_shaded_triangle( Vec3 p0, Vec3 p1, Vec3 p2, uint16_t color )
       if( g > 31 ) g = 31;
       int b = RGB5_GET_BLUE (color)* l;
       if( b > 31 ) b = 31;      
+
       put_pixel( x,y, RGB5(r,g,b) );
     }
   }

@@ -33,6 +33,7 @@ Vec3 cross3( Vec3 a, Vec3 b ) {
 void mat4fXmat4f( float *a, float *b, float *retmat ){
   for( int i=0; i < 4; i++ ) {
     for( int j=0; j < 4; j++ ) {
+      retmat[i*4+j] = 0.0;
       for( int k=0; k < 4; k++ ) {
           retmat[ i* 4+j] += a[i*4+k] * b[k*4 + j];
       }
@@ -71,14 +72,15 @@ Vec4 mat4fXvec4f( float *a, Vec4 b ){
   float ret[4];
   Vec4 retvec;
   for( int i=0; i < 4; ++i ) {
+    ret[i] = 0.0;
     for( int j=0; j < 4; ++j ) {
         ret[i] += a[i*4+j] *work [j]; 
     }
   }
-  retvec.x = work[0];
-  retvec.y = work[1];
-  retvec.z = work[2];
-  retvec.w = work[3];
+  retvec.x = ret[0];
+  retvec.y = ret[1];
+  retvec.z = ret[2];
+  retvec.w = ret[3];
 
 //  retvec.x = a[ 0] * b.x + a[ 1] * b.y + a[ 2] * b.z + a[ 3] * b.w ;
 //  retvec.y = a[ 4] * b.x + a[ 5] * b.y + a[ 6] * b.z + a[ 7] * b.w ;

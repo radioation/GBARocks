@@ -32,8 +32,14 @@ typedef struct{
 } Instance;
 
 typedef struct {
+  Vec3 normal;
+  float distance;
+} Plane;
+
+typedef struct {
   Vec3 position;
   float orientation[16];
+  Plane clipping_planes[5]; 
 }  Camera;
 
 void get_translation_matrix( Vec3 t, float *mat );
