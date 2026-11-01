@@ -35,7 +35,7 @@ They spent two pages deriving y=mx+b from two 2D points.
 
 
 ## Wireframe Triangles
-This is easy, just call DrawLines for each side. Nothing to learn here.
+This is easy, just call DrawLine for each side. Nothing to learn here.
 
 ## Filled Triangles
 Rather than draw the three sides of the triangle, filled triangles can draw 

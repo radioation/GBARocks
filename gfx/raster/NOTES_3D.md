@@ -29,7 +29,7 @@ to O to find P' on the Viewport.
     |
 
 ```
-* Triangls OP'A and OPB are similar, so the proportions of their sides are the same.
+* Triangles OP'A and OPB are similar, so the proportions of their sides are the same.
 * `P'_z` is d away from O because we defined the Viewport as being `d` away from O
 
 `P'_z = d`
@@ -54,19 +54,19 @@ Important points that I mostly remembered on a high level (but forgot the matrix
 ### Object representation
 * Use triangles.  Any other polygon, can be decomposed into triangles.
   (not mentioned, but triangles will always be planar, and Squares might not be)
-* Triangles exist of Verticies, but simply listing verticies isn't enough. We
+* Triangles exist of Vertices, but simply listing vertices isn't enough. We
   need to define triangles as sets of 3 vertices to make up the side. 
 
 *IMP* This suggests a generic structure to represent any object made of triangles:
   1. A `Verticies` list holding the coordinates of each vertex (in MODEL space)
   2. A `Triangles` list specifying by index which sets of three vertices describe
-    triangles on the surface of the object.  (He goes on to add colors to the triangls )
+    triangles on the surface of the object.  (He goes on to add colors to the triangles )
 
- *IIRC* there may be some advantage to speifing the vertices for a triangle in a consistent 
+ *IIRC* there may be some advantage to specifying the vertices for a triangle in a consistent 
  order to define normals pointing outward from the object. (not mentioned here)(
 
-*IMP* Object REndering: FIRST project every vertex and store in in a vertices 
-list (this way we don't repeat the calcualtions for shared verticies) SECOND go
+*IMP* Object Rendering: FIRST project every vertex and store in in a vertices 
+list (this way we don't repeat the calculations for shared vertices) SECOND go
 through the triangles list and render reach 
 
 
@@ -77,20 +77,20 @@ V' is the translated vertex. IN this case the translated vertices would be in `W
 
 ### Models and Instances
 You often want to render multiple copies of an object in a game (players, NPCs, environment 
-objects). Objects can have a *lot* of verticies and having a copy of the model for 
-each would waste a lot of memory. INstead of having copies use Models and INstances
-* Model: a set of verticies and triangles describing a certain object in a generic way
-* Instance: A concrete occurance of that model within the scene.  In code, the 
+objects). Objects can have a *lot* of vertices and having a copy of the model for 
+each would waste a lot of memory. Instead of having copies use Models and Instances
+* Model: a set of vertices and triangles describing a certain object in a generic way
+* Instance: A concrete occurrence of that model within the scene.  In code, the 
   instance would have a reference to the original model and some instance-specific
   data like position, orientation, scaling, coloring etc for rendering.
 
-so basicaly
+so basically
 1. RenderScene() would iterate over instances
 2. for each instance the RenderInstance(i) would be called
 3. RenderInstance() would get the model for the instance.
   a. it'd iterate over the model vertices, project them, and 
      store them for triangle rendering
-  b. it'd iterate over the modle triangles and render 
+  b. it'd iterate over the model triangles and render 
      triangles based on the projected vertices from 3a
 
 *IMP* Translation is not the only thing that we do to models. We want a 
@@ -104,7 +104,7 @@ so basicaly
   no difference between moving the camera in a fixed scene vs fixing the camera
   and moving the scene around it.
 
-*IMP* we can render the scene from the point of view of th camera by applying 
+*IMP* we can render the scene from the point of view of the camera by applying 
  the _opposite_ transforms to each vertex of the scene.
 
  `V_translated = V_scene - camera.translation`
@@ -113,7 +113,7 @@ so basicaly
 
 
 ### Transform Matrix
-1. Model Transform : move from model space to world cpace 
+1. Model Transform : move from model space to world space 
   `V_model_scaled = instance.scale * V_model` 
   `V_model_rotated = instance.rotation * V_model_scaled` 
   `V_world = V_model_rotated + instace.translation` 
@@ -130,19 +130,37 @@ so basicaly
   `c_x = v_x * c_w / v_w`
   `c_y = v_y * c_h/ v_h`
 
-he goes on to show the usfulness of Homogeneous coordinates.
+he goes on to show the usefulness of Homogeneous coordinates.
 * Homogeneous Rotation Matrix
 * Homogeneous Scale Matrix
 * Homogeneous Translation Matrix
 * Homogeneous Projection Matrix
 * Homogeneous Viewport-to-Canvas Matrix
 As matrices we can combine them by multiplying the mall together. What we need though are at least 
-`M_projection` - rarly changes. Depdns on viewport and canvas size.
-  *IMP*He doesn't use the full projection matrix in the rest of the book. THis lets
+`M_projection` - rarely changes. Depends on viewport and canvas size.
+  *IMP*He doesn't use the full projection matrix in the rest of the book. This lets
   him perform more operations in 3D that can't be expressed as matrix transforms before
   projecting the points.
 `M_Camera` - changes every time the camera position/orientation changes.
-`M_Model` - different for every instance in a scen. Remains constatnt for instances
+`M_Model` - different for every instance in a scene. Remains constant for instances
   that don't move/rotate.
+
+
+## Clipping
+At a high level, you 
+1. setup several planes (the view port, 4 planes to define a view frustum, possibly
+  add another for distance)
+2. Check if your object (using a quick bounding volume like a sphere) is in front
+  or behind the clipping planes.  If behind (the distance of the sphere is < -r) 
+  discard the object entirely. If completely in front (d > r ) you keep it
+  anything where `abs(d) < r` you need to check all of the triangles
+3. you get the distance for each point on a triangle
+  a. 3 vertices in front, keep the triangle
+  b. 3 vertices in behind, discard the triangle
+  c. 1 vertex in front. The point in front and the intersection points of its sides
+     are the new triangle
+  d. 2 vertices in front. divide the fragment into two triangles using the intersecting
+     points and adding a line to split the inner part into two triangles.
+
 
 
