@@ -27,74 +27,77 @@ bool transform_and_clip( Plane *clipping_planes, Model *model, float scale, floa
     center3.x = center.x;
     center3.y = center.y;
     center3.z = center.z;
-    float distance = dot3( clipping_planes[p].normal, center ) + clipping_planes[p].distance;
-    if( distance <instances[i].model->bounds_radius ) {
+    float distance = dot3( clipping_planes[p].normal, center3 ) + clipping_planes[p].distance;
+    if( distance <  model->bounds_radius ) {
       return false;
     } 
 
   }
   // TAC- Apply modelview transform
- new_model->vertices = malloc( sizeof(  Vec4 )  * model->num_vertices * 2 ); // doubling space to avoid realloc latter.
- new_model->num_vertices = 0;
+  new_model->vertices = malloc( sizeof(  Vec4 )  * model->num_vertices * 2 ); // doubling space to avoid realloc latter.
+  new_model->num_vertices = 0;
   for (int  i = 0; i < model->num_vertices; i++) {
     Vec3 newvert = model->vertices[i];
-    Vec4 newvert4;
-    newvert4.x = newvert.x;
-    newvert4.y = newvert.y;
-    newvert4.z = newvert.z;
-    newvert4.w = 1.0;
-    new_model->vertices[i] = mat4fXvec4f(transform,  newvert );
- new_model->num_vertices++;
+    Vec4 tmpvert;
+    tmpvert.x = newvert.x;
+    tmpvert.y = newvert.y;
+    tmpvert.z = newvert.z;
+    tmpvert.w = 1.0;
+    Vec4 newvert4 = mat4fXvec4f(transform,  tmpvert );
+    new_model->vertices[i].x = newvert4.x;
+    new_model->vertices[i].y = newvert4.y;
+    new_model->vertices[i].z = newvert4.z;
+    new_model->num_vertices++;
   }
 
   // TAC- clip entire model against each frustum plane
 
   //let triangles = model.triangles.slice(); // full copy of triangles.
- new_model->triangles = malloc( sizeof(  Vec4 )  * model->num_triangles * 2 ); // doubling space to avoid realloc latter.
+  new_model->triangles = malloc( sizeof(  Vec4 )  * model->num_triangles * 2 ); // doubling space to avoid realloc latter.
 
- new_model->num_triangles = 0;
+  new_model->num_triangles = 0;
   for (int  p = 0; p < 5; p++) {
-      for (int i = 0; i < 12; i++) {  // hardcoded 12 triangles in 6 sided cube.
-                                     
-        //ClipTriangle(triangles[i], clipping_planes[p], new_triangles, vertices);
-        Vec3 v0 = model->verticies[model->triangles[i].v0];
-        Vec3 v1 = model->verticies[model->triangles[i].v1];
-        Vec3 v2 = model->verticies[model->triangles[i].v2];
+    for (int i = 0; i < 12; i++) {  // hardcoded 12 triangles in 6 sided cube.
 
-        int in0 = dot3( clipping_planes[p].normal, v0 ) + clipping_planes[p].distance > 0 ? 1 : 0;
-        int in1 = dot3( clipping_planes[p].normal, v1 ) + clipping_planes[p].distance > 0 ? 1 : 0;
-        int in2 = dot3( clipping_planes[p].normal, v2 ) + clipping_planes[p].distance > 0 ? 1 : 0;
-        int in_count = 0;
-        if( in_count == 0 ) {
-            // do nothing. triangle is fully clipped out
-        } else if ( in_count == 3 ) {
-          //fully in
-          new_model->triangles[new_triangle_count] = model->triangles[i];
- new_model->num_triangles++;
-        } else if ( in_count == 1 ) {
-          // one vertex in, output is one clipped triangle
-          
-          // get new two new vertices from intersection, add to new vertex list
-          if( in0 ) {
-          }else if ( in1 ) {
-          }else if ( in2 ) {
-          }
- new_model->num_triangles++;
-          // set triangle with new vertex indices.
-        } else if ( in_count == 3 ) {
-          if( in0 ) {
-          }else if ( in1 ) {
-          }else if ( in2 ) {
-          }
+      //ClipTriangle(triangles[i], clipping_planes[p], new_triangles, vertices);
+      Vec3 v0 = model->vertices[model->triangles[i].v0];
+      Vec3 v1 = model->vertices[model->triangles[i].v1];
+      Vec3 v2 = model->vertices[model->triangles[i].v2];
 
- new_model->num_triangles+=2;
+      int in0 = dot3( clipping_planes[p].normal, v0 ) + clipping_planes[p].distance > 0 ? 1 : 0;
+      int in1 = dot3( clipping_planes[p].normal, v1 ) + clipping_planes[p].distance > 0 ? 1 : 0;
+      int in2 = dot3( clipping_planes[p].normal, v2 ) + clipping_planes[p].distance > 0 ? 1 : 0;
+      int in_count = 0;
+      if( in_count == 0 ) {
+        // do nothing. triangle is fully clipped out
+      } else if ( in_count == 3 ) {
+        //fully in
+        new_model->triangles[new_model->num_triangles] = model->triangles[i];
+        new_model->num_triangles++;
+      } else if ( in_count == 1 ) {
+        // one vertex in, output is one clipped triangle
+
+        // get new two new vertices from intersection, add to new vertex list
+        if( in0 ) {
+        }else if ( in1 ) {
+        }else if ( in2 ) {
         }
-    
+        new_model->num_triangles++;
+        // set triangle with new vertex indices.
+      } else if ( in_count == 3 ) {
+        if( in0 ) {
+        }else if ( in1 ) {
+        }else if ( in2 ) {
+        }
+
+        new_model->num_triangles+=2;
       }
+
+    }
   }
-  new_model->bounds_center = 0;
+  new_model->bounds_center = (Vec4){0.0,0.0,0.0,0.0};
   new_model->bounds_radius = 1.73205080757;  // sqrt(3) 1.73205080757
-return true;
+  return true;
 }
 
 
