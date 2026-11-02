@@ -22,19 +22,28 @@ bool transform_and_clip( Plane *clipping_planes, Model *model, float scale, floa
   //   let clipped = TransformAndClip(camera.clipping_planes, instances[i].model, instances[i].scale, transform);
   // TAC- transform bounding sphere. and look for early discard.
   Vec4 center = mat4fXvec4f( transform, model->bounds_center );
-  for( int P=0; P < 5; p++ ) {
+  for( int p=0; p < 5; p++ ) {
+    Vec3 center3;
+    center3.x = center.x;
+    center3.y = center.y;
+    center3.z = center.z;
     float distance = dot3( clipping_planes[p].normal, center ) + clipping_planes[p].distance;
     if( distance <instances[i].model->bounds_radius ) {
       return false;
     } 
 
   }
-  // TAC- APply modelview transform
+  // TAC- Apply modelview transform
  new_model->vertices = malloc( sizeof(  Vec4 )  * model->num_vertices * 2 ); // doubling space to avoid realloc latter.
  new_model->num_vertices = 0;
-  for (int  i = 0; i < model->vertices.length; i++) {
-    Vec4 newvert = model->vertices[i];
-    new_Model->vertices[i] = mat4fXvec4f(transform,  newvert );
+  for (int  i = 0; i < model->num_vertices; i++) {
+    Vec3 newvert = model->vertices[i];
+    Vec4 newvert4;
+    newvert4.x = newvert.x;
+    newvert4.y = newvert.y;
+    newvert4.z = newvert.z;
+    newvert4.w = 1.0;
+    new_model->vertices[i] = mat4fXvec4f(transform,  newvert );
  new_model->num_vertices++;
   }
 
@@ -55,7 +64,7 @@ bool transform_and_clip( Plane *clipping_planes, Model *model, float scale, floa
         int in0 = dot3( clipping_planes[p].normal, v0 ) + clipping_planes[p].distance > 0 ? 1 : 0;
         int in1 = dot3( clipping_planes[p].normal, v1 ) + clipping_planes[p].distance > 0 ? 1 : 0;
         int in2 = dot3( clipping_planes[p].normal, v2 ) + clipping_planes[p].distance > 0 ? 1 : 0;
-        int in_count == 0;
+        int in_count = 0;
         if( in_count == 0 ) {
             // do nothing. triangle is fully clipped out
         } else if ( in_count == 3 ) {
