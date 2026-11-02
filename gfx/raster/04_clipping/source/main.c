@@ -95,7 +95,7 @@ bool transform_and_clip( Plane *clipping_planes, Model *model, float scale, floa
 
     }
   }
-  new_model->bounds_center = (Vec4){0.0,0.0,0.0,0.0};
+  new_model->bounds_center = (Vec4){0.0f,0.0f,0.0f,1.0f};
   new_model->bounds_radius = 1.73205080757;  // sqrt(3) 1.73205080757
   return true;
 }
@@ -146,7 +146,7 @@ int main(void) {
     {2, 7, 3, CYAN}
   };
   // hardcoded 12 triangles.
-  Model cube = { vertices, triangles, 8, 12, {0.0f, 0.0f, 0.0f}, 1.73205080757};  // sqrt(3) 1.73205080757
+  Model cube = { vertices, triangles, 8, 12, {0.0f, 0.0f, 0.0f, 1.0f}, 1.73205080757};  // sqrt(3) 1.73205080757
 
   // setup instances.
   Instance instances[] = {
