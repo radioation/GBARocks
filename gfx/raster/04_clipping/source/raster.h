@@ -19,8 +19,10 @@ typedef struct {
 typedef struct {
   Vec3 *vertices;
   Triangle *triangles;
-  int num_verticies;
+  int num_vertices;
   int num_triangles;
+  Vec4 bounds_center;
+  float bounds_radius;
 } Model;
 
 typedef struct{
