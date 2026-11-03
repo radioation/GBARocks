@@ -1,0 +1,124 @@
+#include "my_math.h"
+
+float dot3( Vec3 a, Vec3 b ){
+  return a.x * b.x + a.y* b.y + a.z  * b.z ;
+}
+Vec3 add3( Vec3 a, Vec3 b ) {
+  return (Vec3){a.x + b.x, a.y + b.y, a.z + b.z};
+}
+Vec3 subtract3( Vec3 a,Vec3  b ) {
+  return (Vec3){a.x - b.x, a.y - b.y, a.z - b.z};
+}
+
+Vec3 mul3( Vec3 a, float v ) {
+  return (Vec3){a.x *v, a.y *v, a.z *v};
+}
+
+Vec3 cross3( Vec3 a, Vec3 b ) {
+  Vec3 retvec;
+  retvec.x = a.y*b.z - a.z*b.y;
+  retvec.y = a.z*b.x - a.x*b.z;
+  retvec.z = a.x*b.y - a.y*b.x;
+	return retvec;
+}
+
+//void cross3f( float *a, float* b, float *retvect ) {
+//  retvect[0] = a[1]*b[2] - a[2]*b[1];
+//  retvect[1] = a[2]*b[0] - a[0]*b[2];
+//  retvect[2] = a[0]*b[1] - a[1]*b[0];
+//
+//}
+
+
+void mat4fXmat4f( float *a, float *b, float *retmat ){
+  for( int i=0; i < 4; i++ ) {
+    for( int j=0; j < 4; j++ ) {
+      retmat[i*4+j] = 0.0;
+      for( int k=0; k < 4; k++ ) {
+          retmat[ i* 4+j] += a[i*4+k] * b[k*4 + j];
+      }
+    }
+  }
+
+
+//  retmat[0]  = a[0]*b[0] + a[1]*b[4] + a[2]*b[8] + a[3]*b[12];
+//  retmat[1]  = a[0]*b[1] + a[1]*b[5] + a[2]*b[9] + a[3]*b[13];
+//  retmat[2]  = a[0]*b[2] + a[1]*b[6] + a[2]*b[10] + a[3]*b[14];
+//  retmat[3]  = a[0]*b[3] + a[1]*b[7] + a[2]*b[11] + a[3]*b[15];
+//
+//  retmat[4]  = a[4]*b[0] + a[5]*b[4] + a[6]*b[8] + a[7]*b[12];
+//  retmat[5]  = a[4]*b[1] + a[5]*b[5] + a[6]*b[9] + a[7]*b[13];
+//  retmat[6]  = a[4]*b[2] + a[5]*b[6] + a[6]*b[10] + a[7]*b[14];
+//  retmat[7]  = a[4]*b[3] + a[5]*b[7] + a[6]*b[11] + a[7]*b[15];
+//
+//  retmat[8]  = a[8]*b[0] + a[9]*b[4] + a[10]*b[8] + a[11]*b[12];
+//  retmat[9]  = a[8]*b[1] + a[9]*b[5] + a[10]*b[9] + a[11]*b[13];
+//  retmat[10] = a[8]*b[2] + a[9]*b[6] + a[10]*b[10] + a[11]*b[14];
+//  retmat[11] = a[8]*b[3] + a[9]*b[7] + a[10]*b[11] + a[11]*b[15];
+//
+//  retmat[12] = a[12]*b[0] + a[13]*b[4] + a[14]*b[8] + a[15]*b[12];
+//  retmat[13] = a[12]*b[1] + a[13]*b[5] + a[14]*b[9] + a[15]*b[13];
+//  retmat[14] = a[12]*b[2] + a[13]*b[6] + a[14]*b[10] + a[15]*b[14];
+//  retmat[15] = a[12]*b[3] + a[13]*b[7] + a[14]*b[11] + a[15]*b[15];
+
+}
+
+Vec4 mat4fXvec4f( float *a, Vec4 b ){
+  float work[4];
+  work[0] = b.x;
+  work[1] = b.y;
+  work[2] = b.z;
+  work[3] = b.w;
+  float ret[4];
+  Vec4 retvec;
+  for( int i=0; i < 4; ++i ) {
+    ret[i] = 0.0;
+    for( int j=0; j < 4; ++j ) {
+        ret[i] += a[i*4+j] *work [j]; 
+    }
+  }
+  retvec.x = ret[0];
+  retvec.y = ret[1];
+  retvec.z = ret[2];
+  retvec.w = ret[3];
+
+//  retvec.x = a[ 0] * b.x + a[ 1] * b.y + a[ 2] * b.z + a[ 3] * b.w ;
+//  retvec.y = a[ 4] * b.x + a[ 5] * b.y + a[ 6] * b.z + a[ 7] * b.w ;
+//  retvec.z = a[ 8] * b.x + a[ 9] * b.y + a[10] * b.z + a[11] * b.w ;
+//  retvec.w = a[12] * b.x + a[13] * b.y + a[14] * b.z + a[15] * b.w ;
+  return retvec;
+}
+
+
+void transposeMat4f( float* a, float *retmat ){
+  retmat[0]  = a[0];
+  retmat[1]  = a[4];
+  retmat[2]  = a[8];
+  retmat[3]  = a[11];
+
+  retmat[4]  = a[1];
+  retmat[5]  = a[5];
+  retmat[6]  = a[9];
+  retmat[7]  = a[13];
+
+  retmat[8]  = a[2];
+  retmat[9]  = a[6];
+  retmat[10] = a[10];
+  retmat[11] = a[14];
+
+  retmat[12] = a[3];
+  retmat[13] = a[7];
+  retmat[14] = a[11];
+  retmat[15] = a[15];
+}
+
+
+
+Vec4 add4( Vec4 a, Vec4 b ) {
+  return (Vec4){a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
+}
+
+Vec4 subtract4( Vec4 a,Vec4  b ) {
+  return (Vec4){a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};
+}
+
