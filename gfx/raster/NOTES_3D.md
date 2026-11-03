@@ -147,7 +147,7 @@ As matrices we can combine them by multiplying the mall together. What we need t
 
 
 ## Clipping
-At a high level, you 
+Straightforward and matches what I remember at a high level, you :
 1. setup several planes (the view port, 4 planes to define a view frustum, possibly
   add another for distance)
 2. Check if your object (using a quick bounding volume like a sphere) is in front
@@ -161,6 +161,26 @@ At a high level, you
      are the new triangle
   d. 2 vertices in front. divide the fragment into two triangles using the intersecting
      points and adding a line to split the inner part into two triangles.
+
+
+## Hidden Surface Removal.
+Again, matches waht I remember at a high level.
+* Painter's algorithm can work but has flaws
+  * sorting step can get expensive
+  * some triangle placement can't be cleanly sorted
+* Z-buffer on 1/z
+* Backface culling
+  * Uses angle between  N ( normal vector of triangle) and V ( vector from vertex of triangle 
+    to camera.) to see if they're within 90 degres of each other
+  * Use vertex ordering on triangles/faces so Normal points outward ( use cross product )
+    *IMP* he's defining triangle vertices in CLOCKWISE ORDER to point normal 
+    at camera lookinag at the front face of the triangle.
+
+
+
+
+
+
 
 
 
