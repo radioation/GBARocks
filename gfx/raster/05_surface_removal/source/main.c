@@ -168,7 +168,7 @@ int main(void) {
   Instance instances[] = {
     { &cube, { -1.5, 0.0, 7.0}, {0 }, 0.75, {} },
     { &cube, { 1.25, 2.5, 7.5}, {0 }, 1.00, {} },
-    { &cube, { 0.0, 0.0, -10.0}, {0 }, 1.00, {} },
+//    { &cube, { 0.0, 0.0, -10.0}, {0 }, 1.00, {} },  Don't bother with this example.
 
   };
   get_identity_matrix( instances[0].orientation);
@@ -203,8 +203,7 @@ int main(void) {
 
 
   // iter instances
-  // NOTE: LOOK AT ALL THREE BUT ONLY 2 GET DRAWN AS #3 GETS REJECTED OUTRIGHT.
-  for( int i=0; i < 3; ++i ) {
+  for( int i=0; i < 2; ++i ) {
     // get transform
     float transform[16];
     mat4fXmat4f( camera_matrix,instances[i].transform,  transform );
@@ -229,7 +228,8 @@ int main(void) {
       }
       for( int j=0; j < new_model.num_triangles; ++j ) {
         // render triangle
-        draw_wireframe_triangle(
+        //draw_wireframe_triangle(
+        draw_filled_triangle(
             projected[ new_model.triangles[j].v0 ],
             projected[ new_model.triangles[j].v1 ],
             projected[ new_model.triangles[j].v2],

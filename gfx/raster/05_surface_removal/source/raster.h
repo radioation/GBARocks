@@ -10,13 +10,6 @@
 
 
 typedef struct {
-  uint16_t v0;
-  uint16_t v1;
-  uint16_t v2;
-  uint16_t color;
-} Triangle;
-
-typedef struct {
   Vec3 *vertices;
   Triangle *triangles;
   int num_vertices;

@@ -141,6 +141,78 @@ void draw_filled_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t color )
 
 }
 
+void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
+{
+  int v0 = triangle.v0;
+  int v1 = triangle.v1;
+  int v2 = triangle.v2;
+  Point2 p0 = projected[ triangle.v0 ];  
+  Point2 p1 = projected[ triangle.v1 ];  
+  Point2 p2 = projected[ triangle.v2 ];  
+
+
+  // sort points
+  if( p1.y  < p0.y ) {
+   swap( Point2, p1, p0 );
+   swap( int, v1, v0 );
+  }
+  if( p2.y  < p0.y ) {
+    swap( Point2, p2, p0 );
+   swap( int, v2, v0 );
+  }
+  if( p2.y  < p1.y ) {
+   swap( Point2, p2, p1 );
+   swap( int, v2, v1 );
+  }
+  //
+
+  // backface culling
+  // get triangle normal.
+  Vec3 v0v1 = subtract3( vertices[v1],vertices[ v0] ); 
+  Vec3 v0v2 = subtract3( vertices[v2],vertices[ v0] ); 
+  Vec3 normo = cross3( v0v1, v0v2 );
+  Vec3  vertex_to_camera = mul3( vertices[v0], -1.0f );  // should be subtract camera.position, 
+  float dotty =  dot3( vertex_to_camera, normo );
+  if ( dotty <= 0.0f ) {
+    return; // facing the other way, don't bother drawing.
+  }
+/*
+
+  // get the X cordinates for each y of the triangle sides
+  int x01count =  interpolate( p0.y, p0.x, p1.y, p1.x, x01 );
+  int x12count =  interpolate( p1.y, p1.x, p2.y, p2.x, x12 );
+  int x02count =  interpolate( p0.y, p0.x, p2.y, p2.x, x02 );
+  memset( x012, 0, sizeof( x012 ) );
+  if( x01count > 0 ) {
+    memcpy( x012, x01, (x01count -1)*sizeof(float) );
+    memcpy( x012 + (x01count-1)*sizeof(float), x12, x12count*sizeof(float) );
+  } else {
+    memcpy( x012,  x12, x12count*sizeof(float) );
+  }
+
+  
+  // which side is left and which is right?
+  size_t m = (x01count + x12count -1 )/2;
+  float* x_left = x012;
+  float* x_right = x02;
+  if( x02[m] < x012[m] ) {
+    x_left = x02; 
+    x_right = x012; 
+  } else {
+    x_left = x012; 
+    x_right = x02; 
+  }
+
+
+  // draw the horizontal segments
+  for( int y = (int)p0.y ; y <=(int) p2.y; ++y ) {
+    for( int x =x_left[ y - (int)p0.y]; x <=x_right[ y -(int) p0.y]; ++x) {
+      put_pixel( x,y, color );
+    }
+  }
+*/
+}
+
 
 static float h01[CANVAS_WIDTH];
 static float h12[CANVAS_WIDTH];

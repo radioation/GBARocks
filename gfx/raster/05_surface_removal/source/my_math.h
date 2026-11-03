@@ -22,6 +22,13 @@ typedef struct {
   float h; // 
 } Point2;
 
+typedef struct {
+  uint16_t v0;
+  uint16_t v1;
+  uint16_t v2;
+  uint16_t color;
+} Triangle;
+
 
 float dot3( Vec3 a, Vec3 b );
 Vec3 add3( Vec3 a, Vec3 b );
