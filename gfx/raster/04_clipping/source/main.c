@@ -5,6 +5,7 @@
 #include <gba_systemcalls.h>
 #include <gba_input.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include "canvas.h"
 #include "my_math.h"
@@ -53,49 +54,65 @@ bool transform_and_clip( Plane *clipping_planes, Model *model, float scale, floa
   // TAC- clip entire model against each frustum plane
 
   //let triangles = model.triangles.slice(); // full copy of triangles.
-  new_model->triangles = malloc( sizeof(  Vec4 )  * model->num_triangles * 2 ); // doubling space to avoid realloc latter.
+  //new_model->triangles = malloc( sizeof(  Vec4 )  * model->num_triangles * 2 ); // doubling space to avoid realloc latter.
+  Triangle *oldtri  = malloc( sizeof( Triangle )  * model->num_triangles );
+  int oldtri_count = model->num_triangles;
+  memcpy( oldtri, model->triangles, sizeof(Triangle) * model->num_triangles);
+  Triangle *newtri  = 0;
+  int newtri_count = 0;
 
-  new_model->num_triangles = 0;
+  
   for (int  p = 0; p < 5; p++) {
-    for (int i = 0; i < 12; i++) {  // hardcoded 12 triangles in 6 sided cube.
-
+    if(newtri) free(newtri );
+    newtri  = malloc( sizeof(  Triangle )  * oldtri_count *2  ); // doubling to avoid dynamic realloc in the loop
+    newtri_count = 0;
+    for (int i = 0; i < oldtri_count; i++) {  
       //ClipTriangle(triangles[i], clipping_planes[p], new_triangles, vertices);
-      Vec3 v0 = model->vertices[model->triangles[i].v0];
-      Vec3 v1 = model->vertices[model->triangles[i].v1];
-      Vec3 v2 = model->vertices[model->triangles[i].v2];
+      Vec3 v0 = new_model->vertices[model->triangles[i].v0];
+      Vec3 v1 = new_model->vertices[model->triangles[i].v1];
+      Vec3 v2 = new_model->vertices[model->triangles[i].v2];
 
       int in0 = dot3( clipping_planes[p].normal, v0 ) + clipping_planes[p].distance > 0 ? 1 : 0;
       int in1 = dot3( clipping_planes[p].normal, v1 ) + clipping_planes[p].distance > 0 ? 1 : 0;
       int in2 = dot3( clipping_planes[p].normal, v2 ) + clipping_planes[p].distance > 0 ? 1 : 0;
-      int in_count = 0;
+      int in_count = in0+ in1+ in2;
       if( in_count == 0 ) {
         // do nothing. triangle is fully clipped out
       } else if ( in_count == 3 ) {
         //fully in
-        new_model->triangles[new_model->num_triangles] = model->triangles[i];
-        new_model->num_triangles++;
+        newtri[newtri_count] = oldtri[i];
+        newtri_count ++;
       } else if ( in_count == 1 ) {
         // one vertex in, output is one clipped triangle
 
-        // get new two new vertices from intersection, add to new vertex list
+        // TODO (but probably never): get new two new vertices from intersection, add to new vertex list
         if( in0 ) {
         }else if ( in1 ) {
         }else if ( in2 ) {
         }
-        new_model->num_triangles++;
+        //newtri_count ++;
         // set triangle with new vertex indices.
       } else if ( in_count == 3 ) {
+        // TODO (but probably never): bisect into two new triangles.
         if( in0 ) {
         }else if ( in1 ) {
         }else if ( in2 ) {
         }
 
-        new_model->num_triangles+=2;
+        //newtri_count +=2;
       }
 
     }
+    free(oldtri);
+    oldtri  = malloc( sizeof( Triangle )  * newtri_count );
+    oldtri_count = newtri_count;
+    memcpy( oldtri, newtri, sizeof(Triangle) * newtri_count);
   }
-  new_model->bounds_center = (Vec4){0.0f,0.0f,0.0f,1.0f};
+  new_model->triangles  = malloc( sizeof( Triangle )  * newtri_count );
+  memcpy( new_model->triangles, newtri, sizeof(Triangle) * newtri_count);
+
+  new_model->num_triangles = newtri_count;
+  new_model->bounds_center = (Vec4){0.0,0.0,0.0,1.0};
   new_model->bounds_radius = 1.73205080757;  // sqrt(3) 1.73205080757
   return true;
 }
