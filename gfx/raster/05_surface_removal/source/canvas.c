@@ -1,8 +1,11 @@
 
 #include <string.h>
+#include <float.h>
+
 #include "canvas.h"
 
 static float vals[512];
+static float zbuffer[CANVAS_WIDTH * CANVAS_HEIGHT] __attribute__((section(".ewram"), nobss));
 
 volatile u16 *vram = (volatile u16 *)VRAM;  
 
@@ -12,6 +15,12 @@ volatile u16 *vram = (volatile u16 *)VRAM;
 #define RGB5_GET_GREEN(color) (((color) >> 5) & 0x1F)
 #define RGB5_GET_BLUE(color)  (((color) >> 10) & 0x1F)
 
+
+void clear_zbuffer() {
+      for (int i = 0; i < 240 * 160; i++) {
+        zbuffer[i] = FLT_MAX;
+    }
+}
 
 inline void put_pixel(s16 canvas_x, s16 canvas_y, u16 color)
 {
