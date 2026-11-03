@@ -62,7 +62,7 @@ bool transform_and_clip( Plane *clipping_planes, Model *model, float scale, floa
   int newtri_count = 0;
 
   
-  for (int  p = 0; p < 5; p++) {
+  for (int p = 0; p < 5; p++) {
     if(newtri) free(newtri );
     newtri  = malloc( sizeof(  Triangle )  * oldtri_count *2  ); // doubling to avoid dynamic realloc in the loop
     newtri_count = 0;
@@ -84,7 +84,6 @@ bool transform_and_clip( Plane *clipping_planes, Model *model, float scale, floa
         newtri_count ++;
       } else if ( in_count == 1 ) {
         // one vertex in, output is one clipped triangle
-
         // TODO (but probably never): get new two new vertices from intersection, add to new vertex list
         if( in0 ) {
         }else if ( in1 ) {
@@ -92,7 +91,7 @@ bool transform_and_clip( Plane *clipping_planes, Model *model, float scale, floa
         }
         //newtri_count ++;
         // set triangle with new vertex indices.
-      } else if ( in_count == 3 ) {
+      } else if ( in_count == 2 ) {
         // TODO (but probably never): bisect into two new triangles.
         if( in0 ) {
         }else if ( in1 ) {
@@ -112,7 +111,7 @@ bool transform_and_clip( Plane *clipping_planes, Model *model, float scale, floa
   memcpy( new_model->triangles, newtri, sizeof(Triangle) * newtri_count);
 
   new_model->num_triangles = newtri_count;
-  new_model->bounds_center = (Vec4){0.0,0.0,0.0,1.0};
+  new_model->bounds_center = center;
   new_model->bounds_radius = 1.73205080757;  // sqrt(3) 1.73205080757
   return true;
 }
@@ -204,6 +203,7 @@ int main(void) {
 
 
   // iter instances
+  // NOTE: LOOK AT ALL THREE BUT ONLY 2 GET DRAWN AS #3 GETS REJECTED OUTRIGHT.
   for( int i=0; i < 3; ++i ) {
     // get transform
     float transform[16];
@@ -218,12 +218,12 @@ int main(void) {
       Point2 projected[16]; // figure this out.
       size_t curr_p = 0;
       for( int j=0; j < new_model.num_vertices; ++j ) {
-        Vec4 vertH ;
-        vertH.x = new_model.vertices[j].x;
-        vertH.y = new_model.vertices[j].y;
-        vertH.z = new_model.vertices[j].z;
-        vertH.w = 1.0;
-        Vec4 vert = mat4fXvec4f( transform, vertH );
+        Vec4 vert;
+        vert.x = new_model.vertices[j].x;
+        vert.y = new_model.vertices[j].y;
+        vert.z = new_model.vertices[j].z;
+        vert.w = 1.0;
+     //   Vec4 vert = mat4fXvec4f( transform, vertH );
         projected[curr_p] = project_vertex4( vert );
         curr_p ++;
       }
