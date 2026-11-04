@@ -150,16 +150,16 @@ int main(void) {
   Triangle triangles[] = {
     {0, 1, 2, RED},
     {0, 2, 3, RED},
-    {4, 0, 3, GREEN},
-    {4, 3, 7, GREEN},
-    {5, 4, 7, BLUE},
-    {5, 7, 6, BLUE},
     {1, 5, 6, YELLOW},
     {1, 6, 2, YELLOW},
-    {4, 5, 1, PURPLE},
-    {4, 1, 0, PURPLE},
     {2, 6, 7, CYAN},
-    {2, 7, 3, CYAN}
+    {2, 7, 3, CYAN},
+    {4, 0, 3, GREEN},
+    {4, 1, 0, PURPLE},
+    {4, 3, 7, GREEN},
+    {4, 5, 1, PURPLE},
+    {5, 4, 7, BLUE},
+    {5, 7, 6, BLUE},
   };
   // hardcoded 12 triangles.
   Model cube = { vertices, triangles, 8, 12, {0.0f, 0.0f, 0.0f, 1.0f}, 1.73205080757};  // sqrt(3) 1.73205080757

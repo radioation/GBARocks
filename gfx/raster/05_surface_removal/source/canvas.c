@@ -7,7 +7,7 @@
 static float vals[512];
 static float zbuffer[CANVAS_WIDTH * CANVAS_HEIGHT] __attribute__((section(".ewram"), nobss));
 
-volatile u16 *vram = (volatile u16 *)VRAM;  
+volatile uint16_t *vram = (volatile uint16_t *)VRAM;  
 
 #define swap(type,a,b) do { type _c; _c = a; a = b; b = _c; } while(0)
 
@@ -22,11 +22,11 @@ void clear_zbuffer() {
     }
 }
 
-inline void put_pixel(s16 canvas_x, s16 canvas_y, u16 color)
+inline void put_pixel(int16_t canvas_x, int16_t canvas_y, uint16_t color)
 {
   // 
-  s16 screen_x = CANVAS_WIDTH/2 + canvas_x;  // translate X
-  s16 screen_y = CANVAS_HEIGHT/2 - canvas_y; // translate and flip Y
+  int16_t screen_x = CANVAS_WIDTH/2 + canvas_x;  // translate X
+  int16_t screen_y = CANVAS_HEIGHT/2 - canvas_y; // translate and flip Y
 
   if (screen_x < CANVAS_WIDTH  && screen_x >= 0 &&
       screen_y < CANVAS_HEIGHT && screen_y >= 0 )
@@ -37,7 +37,7 @@ inline void put_pixel(s16 canvas_x, s16 canvas_y, u16 color)
 
 
 
-int interpolate( int16_t i0, float d0, int16_t i1, float d1, float values[] ) {
+int interpolate( int16_t  i0, float d0, int16_t  i1, float d1, float values[] ) {
 
   int count = 0; // not really needed? caller should know size already
 
@@ -58,7 +58,7 @@ int interpolate( int16_t i0, float d0, int16_t i1, float d1, float values[] ) {
   return count;
 }
 
-void draw_line( Point2 p0, Point2 p1, uint16_t color ) {
+void draw_line( Point2 p0, Point2 p1, uint16_t  color ) {
   if ( abs( p1.x - p0.x ) > abs( p1.y - p0.y ) ) {
     // line is horizontal~ish
     // make sure x0 < x1
@@ -82,7 +82,7 @@ void draw_line( Point2 p0, Point2 p1, uint16_t color ) {
 }
 
 
-void draw_wireframe_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t color )
+void draw_wireframe_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t  color )
 {
   draw_line( p0, p1, color );
   draw_line( p1, p2, color );
@@ -94,7 +94,7 @@ static float x12[512];
 static float x012[512];
 
 static float x02[512];
-void draw_filled_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t color )
+void draw_filled_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t  color )
 {
   // sort points
   if( p1.y  < p0.y ) {
@@ -141,52 +141,75 @@ void draw_filled_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t color )
 
 }
 
+static float iz01[512];
+static float iz02[512];
+static float iz12[512];
+static float iz012[512];
 void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
 {
-  int v0 = triangle.v0;
-  int v1 = triangle.v1;
-  int v2 = triangle.v2;
-  Point2 p0 = projected[ triangle.v0 ];  
-  Point2 p1 = projected[ triangle.v1 ];  
-  Point2 p2 = projected[ triangle.v2 ];  
+  // Use sort on triangle lookups to rearrange Y's
+  // *IMP* these indices are NOT going to be CW and should not be used for finding the Normal
+  int i0 = triangle.v0;
+  int i1 = triangle.v1;
+  int i2 = triangle.v2;
 
 
+  Point2 p0 = projected[ i0 ];  
+  Point2 p1 = projected[ i1 ];  
+  Point2 p2 = projected[ i2 ];  
   // sort points
   if( p1.y  < p0.y ) {
    swap( Point2, p1, p0 );
-   swap( int, v1, v0 );
+   swap( int, i1, i0 );
   }
   if( p2.y  < p0.y ) {
     swap( Point2, p2, p0 );
-   swap( int, v2, v0 );
+   swap( int, i2, i0 );
   }
   if( p2.y  < p1.y ) {
    swap( Point2, p2, p1 );
-   swap( int, v2, v1 );
+   swap( int, i2, i1 );
   }
   //
 
   // backface culling
-  // get triangle normal.
-  Vec3 v0v1 = subtract3( vertices[v1],vertices[ v0] ); 
-  Vec3 v0v2 = subtract3( vertices[v2],vertices[ v0] ); 
+  // get triangle normal (use original indicies which are CW order)
+  Vec3 v0 = vertices[triangle.v0];
+  Vec3 v1 = vertices[triangle.v1];
+  Vec3 v2 = vertices[triangle.v2];
+  Vec3 v0v1 = subtract3( v1, v0 ); 
+  Vec3 v0v2 = subtract3( v2, v0 ); 
   Vec3 normo = cross3( v0v1, v0v2 );
-  Vec3  vertex_to_camera = mul3( vertices[v0], -1.0f );  // should be subtract camera.position, 
+  Vec3  vertex_to_camera = mul3( v0, -1.0f );  // should be subtract camera.position, 
   float dotty =  dot3( vertex_to_camera, normo );
   if ( dotty <= 0.0f ) {
     return; // facing the other way, don't bother drawing.
   }
+  p0 = projected[ i0 ];  
+  p1 = projected[ i1 ];  
+  p2 = projected[ i2 ];  
 
   // get the X cordinates for each y of the triangle sides
   int x01count =  interpolate( p0.y, p0.x, p1.y, p1.x, x01 );
+                  interpolate( p0.y, 1/v0.z, p1.y, 1/v1.z, iz01 );
+
   int x12count =  interpolate( p1.y, p1.x, p2.y, p2.x, x12 );
+                  interpolate( p1.y, 1/v1.z, p2.y, 1/v2.z, iz12 );
+
   int x02count =  interpolate( p0.y, p0.x, p2.y, p2.x, x02 );
+                  interpolate( p0.y, 1/v0.z, p2.y, 1/v2.z, iz02 );
+
   memset( x012, 0, sizeof( x012 ) );
+  memset( iz012, 0, sizeof( iz012 ) );
   if( x01count > 0 ) {
     memcpy( x012, x01, (x01count -1)*sizeof(float) );
     memcpy( x012 + (x01count-1)*sizeof(float), x12, x12count*sizeof(float) );
+
+    memcpy( iz012, iz01, (x01count -1)*sizeof(float) );
+    memcpy( iz012 + (x01count-1)*sizeof(float), iz12, x12count*sizeof(float) );
   } else {
     memcpy( x012,  x12, x12count*sizeof(float) );
+    memcpy( iz012,  iz12, x12count*sizeof(float) );
   }
 
   
@@ -219,7 +242,7 @@ static float h012[CANVAS_WIDTH];
 
 static float h02[CANVAS_WIDTH];
 static float h[CANVAS_WIDTH];
-void draw_shaded_triangle( Vec3 p0, Vec3 p1, Vec3 p2, uint16_t color )
+void draw_shaded_triangle( Vec3 p0, Vec3 p1, Vec3 p2, uint16_t  color )
 {
   // sort points
   if( p1.y  < p0.y ) {
