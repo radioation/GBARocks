@@ -176,7 +176,6 @@ void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
   if ( dotty <= 0.0f ) {
     return; // facing the other way, don't bother drawing.
   }
-/*
 
   // get the X cordinates for each y of the triangle sides
   int x01count =  interpolate( p0.y, p0.x, p1.y, p1.x, x01 );
@@ -207,10 +206,10 @@ void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
   // draw the horizontal segments
   for( int y = (int)p0.y ; y <=(int) p2.y; ++y ) {
     for( int x =x_left[ y - (int)p0.y]; x <=x_right[ y -(int) p0.y]; ++x) {
-      put_pixel( x,y, color );
+      put_pixel( x,y, triangle.color );
     }
   }
-*/
+
 }
 
 

@@ -229,12 +229,13 @@ int main(void) {
       for( int j=0; j < new_model.num_triangles; ++j ) {
         // render triangle
         //draw_wireframe_triangle(
-        draw_filled_triangle(
-            projected[ new_model.triangles[j].v0 ],
-            projected[ new_model.triangles[j].v1 ],
-            projected[ new_model.triangles[j].v2],
-            new_model.triangles[j].color
-            );
+        //draw_filled_triangle(
+        //    projected[ new_model.triangles[j].v0 ],
+        //    projected[ new_model.triangles[j].v1 ],
+        //    projected[ new_model.triangles[j].v2],
+        //    new_model.triangles[j].color
+        //    );
+        draw_triangle( new_model.triangles[j], projected, new_model.vertices );
       }
 
     }
