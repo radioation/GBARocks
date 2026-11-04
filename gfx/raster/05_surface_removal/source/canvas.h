@@ -27,6 +27,7 @@ void draw_wireframe_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t  color )
 void draw_filled_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t  color );
 void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] );
 
+void clear_zbuffer();
 
 
 // use Z for color intensity (0 to 1)

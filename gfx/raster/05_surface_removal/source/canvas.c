@@ -17,9 +17,9 @@ volatile uint16_t *vram = (volatile uint16_t *)VRAM;
 
 
 void clear_zbuffer() {
-      for (int i = 0; i < 240 * 160; i++) {
-        zbuffer[i] = FLT_MAX;
-    }
+  for (int i = 0; i < 240 * 160; i++) {
+    zbuffer[i] = FLT_MAX;
+  }
 }
 
 inline void put_pixel(int16_t canvas_x, int16_t canvas_y, uint16_t color)
@@ -98,13 +98,13 @@ void draw_filled_triangle( Point2 p0, Point2 p1, Point2 p2, uint16_t  color )
 {
   // sort points
   if( p1.y  < p0.y ) {
-   swap( Point2, p1, p0 );
+    swap( Point2, p1, p0 );
   }
   if( p2.y  < p0.y ) {
     swap( Point2, p2, p0 );
   }
   if( p2.y  < p1.y ) {
-   swap( Point2, p2, p1 );
+    swap( Point2, p2, p1 );
   }
 
   // get the X cordinates for each y of the triangle sides
@@ -145,6 +145,7 @@ static float iz01[512];
 static float iz02[512];
 static float iz12[512];
 static float iz012[512];
+static float zscan[512];
 void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
 {
   // Use sort on triangle lookups to rearrange Y's
@@ -159,16 +160,16 @@ void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
   Point2 p2 = projected[ i2 ];  
   // sort points
   if( p1.y  < p0.y ) {
-   swap( Point2, p1, p0 );
-   swap( int, i1, i0 );
+    swap( Point2, p1, p0 );
+    swap( int, i1, i0 );
   }
   if( p2.y  < p0.y ) {
     swap( Point2, p2, p0 );
-   swap( int, i2, i0 );
+    swap( int, i2, i0 );
   }
   if( p2.y  < p1.y ) {
-   swap( Point2, p2, p1 );
-   swap( int, i2, i1 );
+    swap( Point2, p2, p1 );
+    swap( int, i2, i1 );
   }
   //
 
@@ -191,13 +192,13 @@ void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
 
   // get the X cordinates for each y of the triangle sides
   int x01count =  interpolate( p0.y, p0.x, p1.y, p1.x, x01 );
-                  interpolate( p0.y, 1/v0.z, p1.y, 1/v1.z, iz01 );
+  interpolate( p0.y, 1/v0.z, p1.y, 1/v1.z, iz01 );
 
   int x12count =  interpolate( p1.y, p1.x, p2.y, p2.x, x12 );
-                  interpolate( p1.y, 1/v1.z, p2.y, 1/v2.z, iz12 );
+  interpolate( p1.y, 1/v1.z, p2.y, 1/v2.z, iz12 );
 
   int x02count =  interpolate( p0.y, p0.x, p2.y, p2.x, x02 );
-                  interpolate( p0.y, 1/v0.z, p2.y, 1/v2.z, iz02 );
+  interpolate( p0.y, 1/v0.z, p2.y, 1/v2.z, iz02 );
 
   memset( x012, 0, sizeof( x012 ) );
   memset( iz012, 0, sizeof( iz012 ) );
@@ -212,24 +213,45 @@ void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
     memcpy( iz012,  iz12, x12count*sizeof(float) );
   }
 
-  
+
   // which side is left and which is right?
   size_t m = (x01count + x12count -1 )/2;
   float* x_left = x012;
   float* x_right = x02;
+  float* iz_left = x012;
+  float* iz_right = x02;
   if( x02[m] < x012[m] ) {
     x_left = x02; 
     x_right = x012; 
   } else {
     x_left = x012; 
     x_right = x02; 
+    iz_left = iz012; 
+    iz_right = iz02; 
   }
 
 
   // draw the horizontal segments
   for( int y = (int)p0.y ; y <=(int) p2.y; ++y ) {
-    for( int x =x_left[ y - (int)p0.y]; x <=x_right[ y -(int) p0.y]; ++x) {
-      put_pixel( x,y, triangle.color );
+    int xl = x_left[y - (int)p0.y];
+    int xr = x_right[y - (int)p0.y];
+    // interpolate  attributes for this scanline
+    int zl = iz_left[y - (int)p0.y];
+    int zr = iz_right[y - (int)p0.y];
+    interpolate( xl, zl, xr, zr,  zscan );
+    for( int x = xl; x <= xr; x++ ) {
+      float iz = zscan[ x - xl];
+      int16_t screen_x = CANVAS_WIDTH/2 + x;  // translate X
+      int16_t screen_y = CANVAS_HEIGHT/2 - y; // translate and flip Y
+      if( iz < zbuffer[ screen_x +screen_y * CANVAS_WIDTH ]   ) {
+
+
+
+        // printf("sx: %d sy: %d\n", screen_x, screen_y );                                         
+        zbuffer[screen_x+screen_y*CANVAS_WIDTH] = iz;
+        put_pixel( x,y, triangle.color );
+      }
+
     }
   }
 
@@ -246,13 +268,13 @@ void draw_shaded_triangle( Vec3 p0, Vec3 p1, Vec3 p2, uint16_t  color )
 {
   // sort points
   if( p1.y  < p0.y ) {
-   swap( Vec3, p1, p0 );
+    swap( Vec3, p1, p0 );
   }
   if( p2.y  < p0.y ) {
-   swap( Vec3, p2, p0 );
+    swap( Vec3, p2, p0 );
   }
   if( p2.y  < p1.y ) {
-   swap( Vec3, p2, p1 );
+    swap( Vec3, p2, p1 );
   }
 
   // get the X cordinates for each y of the triangle sides

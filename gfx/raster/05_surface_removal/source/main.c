@@ -133,6 +133,7 @@ int main(void) {
 
   // 
   SetMode( MODE_3 | BG2_ON );
+  clear_zbuffer();
 
   // setup model
   // hardcoded 8 vertices.
