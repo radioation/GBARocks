@@ -148,13 +148,27 @@ static float iz012[512];
 static float zscan[512];
 void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
 {
+  /////////////////////////////////////////////////////////////////
+  // backface culling
+  // get triangle normal (use original indicies which are CW order)
+  Vec3 v0 = vertices[triangle.v0];
+  Vec3 v1 = vertices[triangle.v1];
+  Vec3 v2 = vertices[triangle.v2];
+  Vec3 v0v1 = subtract3( v1, v0 ); 
+  Vec3 v0v2 = subtract3( v2, v0 ); 
+  Vec3 normo = cross3( v0v1, v0v2 );
+  Vec3  vertex_to_camera = mul3( v0, -1.0f );  // should be subtract camera.position, 
+  float dotty =  dot3( vertex_to_camera, normo );
+  if ( dotty <= 0.0f ) {
+    return; // facing the other way, don't bother drawing. exit early
+  }
+
+  /////////////////////////////////////////////////////////////////
   // Use sort on triangle lookups to rearrange Y's
   // *IMP* these indices are NOT going to be CW and should not be used for finding the Normal
   int i0 = triangle.v0;
   int i1 = triangle.v1;
   int i2 = triangle.v2;
-
-
   Point2 p0 = projected[ i0 ];  
   Point2 p1 = projected[ i1 ];  
   Point2 p2 = projected[ i2 ];  
@@ -171,22 +185,8 @@ void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
     swap( Point2, p2, p1 );
     swap( int, i2, i1 );
   }
-  //
-
-  // backface culling
-  // get triangle normal (use original indicies which are CW order)
-  Vec3 v0 = vertices[triangle.v0];
-  Vec3 v1 = vertices[triangle.v1];
-  Vec3 v2 = vertices[triangle.v2];
-  Vec3 v0v1 = subtract3( v1, v0 ); 
-  Vec3 v0v2 = subtract3( v2, v0 ); 
-  Vec3 normo = cross3( v0v1, v0v2 );
-  Vec3  vertex_to_camera = mul3( v0, -1.0f );  // should be subtract camera.position, 
-  float dotty =  dot3( vertex_to_camera, normo );
-  if ( dotty <= 0.0f ) {
-    return; // facing the other way, don't bother drawing.
-  }
-  // now use re-ordered indicies
+  
+  // now use re-ordered to find our vertices and projected points.
   v0 = vertices[i0];
   v1 = vertices[i1];
   v2 = vertices[i2];
@@ -194,7 +194,7 @@ void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
   p1 = projected[ i1 ];  
   p2 = projected[ i2 ];  
 
-  // get the X cordinates for each y of the triangle sides
+  // get the X cordinates and 1/z for each y of the triangle sides
   int x01count = interpolate( p0.y, p0.x,     p1.y, p1.x,     x01 );
   int z01count = interpolate( p0.y, 1.0/v0.z, p1.y, 1.0/v1.z, iz01 );
 
@@ -250,9 +250,6 @@ void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
       int16_t screen_x = CANVAS_WIDTH/2 + x;  // translate X
       int16_t screen_y = CANVAS_HEIGHT/2 - y; // translate and flip Y
       if( zbuffer[ screen_x +screen_y * CANVAS_WIDTH ] < iz  ) {
-
-
-
         zbuffer[screen_x+screen_y*CANVAS_WIDTH] = iz;
         put_pixel( x,y, triangle.color );
       }
