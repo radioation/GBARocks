@@ -195,23 +195,23 @@ void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
   p2 = projected[ i2 ];  
 
   // get the X cordinates for each y of the triangle sides
-  int x01count =  interpolate( p0.y, p0.x, p1.y, p1.x, x01 );
-  interpolate( p0.y, 1.0/v0.z, p1.y, 1.0/v1.z, iz01 );
+  int x01count = interpolate( p0.y, p0.x,     p1.y, p1.x,     x01 );
+  int z01count = interpolate( p0.y, 1.0/v0.z, p1.y, 1.0/v1.z, iz01 );
 
-  int x12count =  interpolate( p1.y, p1.x, p2.y, p2.x, x12 );
-  interpolate( p1.y, 1.0/v1.z, p2.y, 1.0/v2.z, iz12 );
+  int x12count = interpolate( p1.y, p1.x,     p2.y, p2.x,     x12 );
+  int z12count = interpolate( p1.y, 1.0/v1.z, p2.y, 1.0/v2.z, iz12 );
 
-  int x02count =  interpolate( p0.y, p0.x, p2.y, p2.x, x02 );
-  interpolate( p0.y, 1.0/v0.z, p2.y, 1.0/v2.z, iz02 );
+  int x02count = interpolate( p0.y, p0.x,     p2.y, p2.x,     x02 );
+  int z02count = interpolate( p0.y, 1.0/v0.z, p2.y, 1.0/v2.z, iz02 );
 
   memset( x012, 0, sizeof( x012 ) );
   memset( iz012, 0, sizeof( iz012 ) );
   if( x01count > 0 ) {
     memcpy( x012, x01, (x01count -1)*sizeof(float) );
-    memcpy( x012 + (x01count-1)*sizeof(float), x12, x12count*sizeof(float) );
+    memcpy( x012 + (x01count-1), x12, x12count*sizeof(float) );
 
-    memcpy( iz012, iz01, (x01count -1)*sizeof(float) );
-    memcpy( iz012 + (x01count-1)*sizeof(float), iz12, x12count*sizeof(float) );
+    memcpy( iz012, iz01, (z01count -1)*sizeof(float) );
+    memcpy( iz012 + (z01count-1), iz12, z12count*sizeof(float) );
   } else {
     memcpy( x012,  x12, x12count*sizeof(float) );
     memcpy( iz012,  iz12, x12count*sizeof(float) );
