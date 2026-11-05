@@ -18,7 +18,7 @@ volatile uint16_t *vram = (volatile uint16_t *)VRAM;
 
 void clear_zbuffer() {
   for (int i = 0; i < 240 * 160; i++) {
-    zbuffer[i] = FLT_MAX;
+    zbuffer[i] = -FLT_MAX;
   }
 }
 
@@ -253,7 +253,6 @@ void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
 
 
 
-        // printf("sx: %d sy: %d\n", screen_x, screen_y );                                         
         zbuffer[screen_x+screen_y*CANVAS_WIDTH] = iz;
         put_pixel( x,y, triangle.color );
       }
