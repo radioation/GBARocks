@@ -186,19 +186,23 @@ void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
   if ( dotty <= 0.0f ) {
     return; // facing the other way, don't bother drawing.
   }
+  // now use re-ordered indicies
+  v0 = vertices[i0];
+  v1 = vertices[i1];
+  v2 = vertices[i2];
   p0 = projected[ i0 ];  
   p1 = projected[ i1 ];  
   p2 = projected[ i2 ];  
 
   // get the X cordinates for each y of the triangle sides
   int x01count =  interpolate( p0.y, p0.x, p1.y, p1.x, x01 );
-  interpolate( p0.y, 1/v0.z, p1.y, 1/v1.z, iz01 );
+  interpolate( p0.y, 1.0/v0.z, p1.y, 1.0/v1.z, iz01 );
 
   int x12count =  interpolate( p1.y, p1.x, p2.y, p2.x, x12 );
-  interpolate( p1.y, 1/v1.z, p2.y, 1/v2.z, iz12 );
+  interpolate( p1.y, 1.0/v1.z, p2.y, 1.0/v2.z, iz12 );
 
   int x02count =  interpolate( p0.y, p0.x, p2.y, p2.x, x02 );
-  interpolate( p0.y, 1/v0.z, p2.y, 1/v2.z, iz02 );
+  interpolate( p0.y, 1.0/v0.z, p2.y, 1.0/v2.z, iz02 );
 
   memset( x012, 0, sizeof( x012 ) );
   memset( iz012, 0, sizeof( iz012 ) );
@@ -223,6 +227,8 @@ void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
   if( x02[m] < x012[m] ) {
     x_left = x02; 
     x_right = x012; 
+    iz_left = iz02; 
+    iz_right = iz012; 
   } else {
     x_left = x012; 
     x_right = x02; 
@@ -233,17 +239,17 @@ void draw_triangle( Triangle triangle, Point2 projected[], Vec3 vertices[] )
 
   // draw the horizontal segments
   for( int y = (int)p0.y ; y <=(int) p2.y; ++y ) {
-    int xl = x_left[y - (int)p0.y];
-    int xr = x_right[y - (int)p0.y];
+    float xl = x_left[y - (int)p0.y];
+    float xr = x_right[y - (int)p0.y];
     // interpolate  attributes for this scanline
-    int zl = iz_left[y - (int)p0.y];
-    int zr = iz_right[y - (int)p0.y];
+    float  zl = iz_left[y - (int)p0.y];
+    float  zr = iz_right[y - (int)p0.y];
     interpolate( xl, zl, xr, zr,  zscan );
     for( int x = xl; x <= xr; x++ ) {
-      float iz = zscan[ x - xl];
+      float iz = zscan[ x -(int) xl];
       int16_t screen_x = CANVAS_WIDTH/2 + x;  // translate X
       int16_t screen_y = CANVAS_HEIGHT/2 - y; // translate and flip Y
-      if( iz < zbuffer[ screen_x +screen_y * CANVAS_WIDTH ]   ) {
+      if( zbuffer[ screen_x +screen_y * CANVAS_WIDTH ] < iz  ) {
 
 
 
